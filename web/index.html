@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sound Classification using ESP32</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔊</text></svg>">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="title">Sound Classification using ESP32</div>
+
+    <div class="tabs">
+      <button id="tab-record-btn" class="active"><i class="fas fa-microphone"></i> Record</button>
+      <button id="tab-predict-btn"><i class="fas fa-brain"></i> Predict</button>
+      <button id="tab-ota-btn"><i class="fas fa-upload"></i> OTA Update</button>
+    </div>
+
+    <div id="tab-record" class="action-area active">
+      <select id="categorySelect">
+        <option value="category1">Category 1</option>
+        <option value="category2">Category 2</option>
+        <option value="category3">Category 3</option>
+        <option value="category4">Category 4</option>
+        <option value="category5">Category 5</option>
+        <option value="category6">Category 6</option>
+      </select>
+      <button onclick="startRecording()"><i class="fas fa-circle"></i> Start Recording (15s)</button>
+      <button onclick="stopRecording()"><i class="fas fa-stop"></i> Stop Recording</button>
+      <div id="recordProgressBar">
+        <div id="recordProgress"></div>
+      </div>
+    </div>
+
+    <div id="tab-predict" class="action-area">
+      <div id="predictionTabContent">
+        <button onclick="predictSound()"><i class="fas fa-magic"></i> Run Prediction</button>
+        <p id="predictionOutput">Prediction: </p>
+      </div>
+    </div>
+
+    <div id="tab-ota" class="action-area" onclick="document.getElementById('firmwareFile').click()">
+      <div class="upload-box">
+        <i class="fas fa-cloud-upload-alt"></i>
+        <span>Choose a file</span>
+      </div>
+      <input type="file" id="firmwareFile" onchange="uploadOTA()" />
+      <p id="otaStatus"></p>
+    </div>
+  </div>
+</body>
+</html>

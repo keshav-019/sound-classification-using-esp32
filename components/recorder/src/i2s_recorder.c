@@ -22,8 +22,9 @@
 #include "driver/spi_common.h"
 #include "sdmmc_cmd.h"
 #include "format_wav.h"
+#include "i2s_recorder.h"
 
-#include ""
+#include "i2s_recorder.h"
 
 static const char *TAG = "pdm_rec_example";
 
@@ -159,7 +160,7 @@ void init_microphone(void)
     ESP_ERROR_CHECK(i2s_channel_enable(rx_handle));
 }
 
-void app_main(void)
+void start_recording(void)
 {
     printf("PDM microphone recording example start\n--------------------------------------\n");
     // Mount the SDCard for recording the audio file

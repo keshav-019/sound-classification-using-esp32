@@ -28,3 +28,5 @@ void mount_sdcard();
 void record_wav(uint32_t rec_time);
 
 void init_microphone();
+
+void start_recording();

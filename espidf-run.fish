@@ -1,0 +1,1 @@
+. ~/esp/esp-idf/export.fish

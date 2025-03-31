@@ -18,6 +18,7 @@
 
 #include "lwip/err.h"
 #include "lwip/sys.h"
+#include "station_mode_wifi.h"
 
 /* The examples use WiFi configuration that you can set via project configuration menu
 
@@ -176,7 +177,7 @@ void wifi_init_sta(void)
     }
 }
 
-void app_main(void)
+void start_wifi(void)
 {
     //Initialize NVS
     esp_err_t ret = nvs_flash_init();

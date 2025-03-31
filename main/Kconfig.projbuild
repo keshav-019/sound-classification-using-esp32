@@ -12,6 +12,61 @@ menu "Example Configuration"
         help
             WiFi password (WPA or WPA2) for the example to use.
 
+    config ESP_WIFI_SOFTAP_SUPPORT
+        string "Soft Access Point Support Defined"
+        default "n"
+        help
+            Define Support for Soft Access Point for ESP32
+
+    config EXAMPLE_BIT_SAMPLE
+        int "Bit Sample"
+        default 16
+        help
+            Define the sampling rate of the audio
+
+    config EXAMPLE_SPI_MOSI_GPIO
+        int "SPI MOSI Pin"
+        default 15
+        help
+            Define the SPI MOSI GPIO Pin
+
+    config EXAMPLE_SPI_MISO_GPIO
+        int "SPI MISO Pin"
+        default 14
+        help
+            Define the SPI MISO GPIO Pin
+
+    config EXAMPLE_SPI_SCLK_GPIO
+        int "SPI Clock Pin"
+        default 13
+        help
+            Define the SPI Clock Pin
+
+    config EXAMPLE_SPI_CS_GPIO
+        int "SPI CS Pin"
+        default 12
+        help
+            Define the CS Pin
+
+    config EXAMPLE_SAMPLE_RATE
+        int "Sampling Rate"
+        default 44100
+        help
+            Define the Sampling Rate
+
+    config EXAMPLE_I2S_CLK_GPIO
+        int "I2S Clock GPIO Set"
+        default 1
+        help
+            Define the Clock for I2S Recorder
+
+    config EXAMPLE_I2S_DATA_GPIO
+        int "I2S Data GPIO Set"
+        default 2
+        help
+            Define the Data GPIO for I2S Recorder
+            
+
     choice ESP_WIFI_SAE_MODE
         prompt "WPA3 SAE mode selection"
         default ESP_WPA3_SAE_PWE_BOTH

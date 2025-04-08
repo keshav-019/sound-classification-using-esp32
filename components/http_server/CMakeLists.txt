@@ -1,10 +1,4 @@
-# components/my_module/CMakeLists.txt
-idf_component_register(
-    SRCS "src/https_server_hosting.c"
-    INCLUDE_DIRS "include"
-    PRIV_REQUIRES vfs spiffs esp_https_server esp_wifi nvs_flash
-    EMBED_FILES "data/servercert.pem" 
-                 "data/privkey.pem" 
-                 "data/script.js" 
-                 "data/style.css"
-)
+idf_component_register(SRCS "src/file_server.c"
+                    INCLUDE_DIRS "include"
+                    PRIV_REQUIRES vfs spiffs esp_http_server esp_http_client esp-tls recorder esp_driver_i2s fatfs
+                    EMBED_FILES "data/favicon.ico" "data/index.html" "data/style.css" "data/script.js" "data/cert.der" "data/privkey.der")

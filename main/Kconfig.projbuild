@@ -1,122 +1,161 @@
-menu "Example Configuration"
+menu "HTTP file_serving example menu"
 
-    config ESP_WIFI_SSID
-        string "WiFi SSID"
+    config EXAMPLE_MOUNT_SD_CARD
+        bool "Use SD card for file storage"
+        default n
+        help
+            If this config item is set, the file you upload to server can be chosen to save in the SDcard.
+
+    config EXAMPLE_FORMAT_IF_MOUNT_SDCARD_FAILED
+        bool "Format the card if mount failed"
+        default n
+        depends on EXAMPLE_MOUNT_SD_CARD
+        help
+            If this config item is set, the card will be formatted if mount has failed.
+
+    config EXAMPLE_USE_SDMMC_HOST
+        bool "Use SDMMC host"
+        default y
+        depends on EXAMPLE_MOUNT_SD_CARD && SOC_SDMMC_HOST_SUPPORTED
+        help
+            If this config item is set, SDMMC is used to mount the SDcard.
+            Otherwise, will use SPI host to access and mount the SDcard.
+
+    config EXAMPLE_WIFI_SSID
+        string "Example Wifi SSID"
         default "Keshav Wifi"
         help
-            SSID (network name) for the example to connect to.
+            If this Wifi SSID is set, then it logs in the WIFI SSID on it.
 
-    config ESP_WIFI_PASSWORD
-        string "WiFi Password"
+    config EXAMPLE_WIFI_PASSWORD
+        string "Example Password"
         default "obcd1234"
         help
-            WiFi password (WPA or WPA2) for the example to use.
+            If this Password is set, then it will connect on that Password only
+    menu "SD card pin configuration (SPI)"
+        depends on EXAMPLE_MOUNT_SD_CARD && !EXAMPLE_USE_SDMMC_HOST
 
-    config ESP_WIFI_SOFTAP_SUPPORT
-        string "Soft Access Point Support Defined"
-        default "n"
+        config EXAMPLE_PIN_MOSI
+            int "MOSI GPIO number"
+            default 15 if IDF_TARGET_ESP32
+            default 35 if IDF_TARGET_ESP32S2
+            default 35 if IDF_TARGET_ESP32S3
+            default 4  # C3 and others
+
+        config EXAMPLE_PIN_MISO
+            int "MISO GPIO number"
+            default 2 if IDF_TARGET_ESP32
+            default 37 if IDF_TARGET_ESP32S2
+            default 37 if IDF_TARGET_ESP32S3
+            default 6  # C3 and others
+
+        config EXAMPLE_PIN_CLK
+            int "CLK GPIO number"
+            default 14 if IDF_TARGET_ESP32
+            default 36 if IDF_TARGET_ESP32S2
+            default 36 if IDF_TARGET_ESP32S3
+            default 5  # C3 and others
+
+        config EXAMPLE_PIN_CS
+            int "CS GPIO number"
+            default 13 if IDF_TARGET_ESP32
+            default 34 if IDF_TARGET_ESP32S2
+            default 34 if IDF_TARGET_ESP32S3
+            default 1  # C3 and others
+
+    endmenu
+
+    menu "SD card pin configuration (SDMMC)"
+        depends on EXAMPLE_USE_SDMMC_HOST && SOC_SDMMC_USE_GPIO_MATRIX
+
+        config EXAMPLE_PIN_CMD
+            int "CMD GPIO number"
+            default 35 if IDF_TARGET_ESP32S3
+            default 1
+
+        config EXAMPLE_PIN_CLK
+            int "CLK GPIO number"
+            default 36 if IDF_TARGET_ESP32S3
+            default 2
+
+        config EXAMPLE_PIN_D0
+            int "D0 GPIO number"
+            default 37 if IDF_TARGET_ESP32S3
+            default 3
+
+        config EXAMPLE_PIN_D1
+            int "D1 GPIO number"
+            default 38 if IDF_TARGET_ESP32S3
+            default 4
+
+        config EXAMPLE_PIN_D2
+            int "D2 GPIO number"
+            default 33 if IDF_TARGET_ESP32S3
+            default 5
+
+        config EXAMPLE_PIN_D3
+            int "D3 GPIO number"
+            default 34 if IDF_TARGET_ESP32S3
+            default 6
+
+    endmenu
+
+    menu "I2S MEMS MIC Configuration"
+        config EXAMPLE_BIT_SAMPLE
+            int "Audio Bit Sampling"
+            default 16
+            help
+                Set the Bit Sample
+    
+        config EXAMPLE_SPI_MOSI_GPIO
+            int "Example SPI MOSI GPIO"
+            default 16
+            help
+                Set the SPI MOSI GPIO
+    
+        config EXAMPLE_SPI_MISO_GPIO
+            int "Example SPI MISO GPIO"
+            default 13
+            help
+                Set the SPI MISO GPIO Pin
+    
+        config EXAMPLE_SPI_SCLK_GPIO
+            int "Example SPI Clock GPIO"
+            default 15
+            help
+                Set the SPI Clock GPIO Pin
+    
+        config EXAMPLE_SPI_CS_GPIO
+            int "Example CS Clock GPIO"
+            default 14
+            help
+                Set the SPI CS GPIO
+    
+        config EXAMPLE_SAMPLE_RATE
+            int "Example Sample Rate"
+            default 44100
+            help
+                Set the Sample Rate
+    
+        config EXAMPLE_I2S_CLK_GPIO
+            int "Example I2S Clock GPIO"
+            default 1
+            help
+                Example I2S Clock GPIO
+    
+        config EXAMPLE_I2S_DATA_GPIO
+            int "Example I2S Data GPIO"
+            default 2
+            help
+                Example I2S Data GPIO
+
+    endmenu
+
+    config EXAMPLE_HTTPD_CONN_CLOSE_HEADER
+        bool "Send connection close header from request handlers"
+        default y
         help
-            Define Support for Soft Access Point for ESP32
-
-    config EXAMPLE_BIT_SAMPLE
-        int "Bit Sample"
-        default 16
-        help
-            Define the sampling rate of the audio
-
-    config EXAMPLE_SPI_MOSI_GPIO
-        int "SPI MOSI Pin"
-        default 15
-        help
-            Define the SPI MOSI GPIO Pin
-
-    config EXAMPLE_SPI_MISO_GPIO
-        int "SPI MISO Pin"
-        default 14
-        help
-            Define the SPI MISO GPIO Pin
-
-    config EXAMPLE_SPI_SCLK_GPIO
-        int "SPI Clock Pin"
-        default 13
-        help
-            Define the SPI Clock Pin
-
-    config EXAMPLE_SPI_CS_GPIO
-        int "SPI CS Pin"
-        default 12
-        help
-            Define the CS Pin
-
-    config EXAMPLE_SAMPLE_RATE
-        int "Sampling Rate"
-        default 44100
-        help
-            Define the Sampling Rate
-
-    config EXAMPLE_I2S_CLK_GPIO
-        int "I2S Clock GPIO Set"
-        default 1
-        help
-            Define the Clock for I2S Recorder
-
-    config EXAMPLE_I2S_DATA_GPIO
-        int "I2S Data GPIO Set"
-        default 2
-        help
-            Define the Data GPIO for I2S Recorder
-            
-
-    choice ESP_WIFI_SAE_MODE
-        prompt "WPA3 SAE mode selection"
-        default ESP_WPA3_SAE_PWE_BOTH
-        help
-            Select mode for SAE as Hunt and Peck, H2E or both.
-        config ESP_WPA3_SAE_PWE_HUNT_AND_PECK
-            bool "HUNT AND PECK"
-        config ESP_WPA3_SAE_PWE_HASH_TO_ELEMENT
-            bool "H2E"
-        config ESP_WPA3_SAE_PWE_BOTH
-            bool "BOTH"
-    endchoice
-
-    config ESP_WIFI_PW_ID
-        string "PASSWORD IDENTIFIER"
-        depends on  ESP_WPA3_SAE_PWE_HASH_TO_ELEMENT|| ESP_WPA3_SAE_PWE_BOTH
-        default ""
-        help
-            password identifier for SAE H2E
-
-    config ESP_MAXIMUM_RETRY
-        int "Maximum retry"
-        default 20
-        help
-            Set the Maximum retry to avoid station reconnecting to the AP unlimited when the AP is really inexistent.
-
-    choice ESP_WIFI_SCAN_AUTH_MODE_THRESHOLD
-        prompt "WiFi Scan auth mode threshold"
-        default ESP_WIFI_AUTH_WPA2_PSK
-        help
-            The weakest authmode to accept in the scan mode.
-            This value defaults to ESP_WIFI_AUTH_WPA2_PSK incase password is present and ESP_WIFI_AUTH_OPEN is used.
-            Please select ESP_WIFI_AUTH_WEP/ESP_WIFI_AUTH_WPA_PSK incase AP is operating in WEP/WPA mode.
-
-        config ESP_WIFI_AUTH_OPEN
-            bool "OPEN"
-        config ESP_WIFI_AUTH_WEP
-            bool "WEP"
-        config ESP_WIFI_AUTH_WPA_PSK
-            bool "WPA PSK"
-        config ESP_WIFI_AUTH_WPA2_PSK
-            bool "WPA2 PSK"
-        config ESP_WIFI_AUTH_WPA_WPA2_PSK
-            bool "WPA/WPA2 PSK"
-        config ESP_WIFI_AUTH_WPA3_PSK
-            bool "WPA3 PSK"
-        config ESP_WIFI_AUTH_WPA2_WPA3_PSK
-            bool "WPA2/WPA3 PSK"
-        config ESP_WIFI_AUTH_WAPI_PSK
-            bool "WAPI PSK"
-    endchoice
+            If this config item is set, Connection: close header will be set in handlers.
+            This closes HTTP connection and frees the server socket instantly.
 
 endmenu

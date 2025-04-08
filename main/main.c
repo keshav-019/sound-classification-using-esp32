@@ -1,58 +1,55 @@
 /*
+ * SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+ *
+ * SPDX-License-Identifier: Unlicense OR CC0-1.0
+ */
+/* HTTP File Server Example
 
-    Steps to Accomplish Task
+   This example code is in the Public Domain (or CC0 licensed, at your option.)
 
-    1) Create an SPIFFS Partition and hardcode the initial data with frequency 0
-
-    2) Create a tab where it lists the file system of the memory card
-
-    3) Give a provision to delete the file from the file system    
-    
+   Unless required by applicable law or agreed to in writing, this
+   software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+   CONDITIONS OF ANY KIND, either express or implied.
 */
 
-#include <stdio.h>
-#include <string.h>
-#include <sys/param.h>
-#include <sys/unistd.h>
-#include <sys/stat.h>
-#include <dirent.h>
-
-#include "esp_err.h"
+#include "esp_event.h"
 #include "esp_log.h"
-#include "esp_vfs.h"
-#include "esp_spiffs.h"
-#include "esp_http_server.h"
-#include "station_mode_wifi.h"
-#include "https_server_hosting.h"
-#include "i2s_recorder.h"
+#include "esp_netif.h"
+#include "esp_err.h"
+#include "nvs_flash.h"
+#include "protocol_examples_common.h"
+#include "file_serving_example_common.h"
+#include "model_predictor.h"
 
-static const char *TAG = "sound_classification_esp32";
+/* This example demonstrates how to create file server
+ * using esp_http_server. This file has only startup code.
+ * Look in file_server.c for the implementation.
+ */
 
-void app_main(void){
+static const char *TAG = "example";
 
-    // Start the WIFI Operation First
-    //Initialize NVS
-    esp_err_t ret = nvs_flash_init();
-    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
-      ESP_ERROR_CHECK(nvs_flash_erase());
-      ret = nvs_flash_init();
-    }
-    ESP_ERROR_CHECK(ret);
+void app_main(void)
+{
+    ESP_LOGI(TAG, "Starting example");
+    ESP_ERROR_CHECK(nvs_flash_init());
+    ESP_ERROR_CHECK(esp_netif_init());
+    ESP_ERROR_CHECK(esp_event_loop_create_default());
 
-    ESP_LOGI(TAG, "ESP_WIFI_MODE_STA");
-    wifi_init_sta();
+    /* Initialize file storage */
+    const char* base_path = "/data";
+    ESP_ERROR_CHECK(mount_storage(base_path));
 
+    /* This helper function configures Wi-Fi or Ethernet, as selected in menuconfig.
+     * Read "Establishing Wi-Fi or Ethernet Connection" section in
+     * examples/protocols/README.md for more information about this function.
+     */
+    ESP_ERROR_CHECK(example_connect());
 
-    esp_vfs_spiffs_conf_t conf = {
-        .base_path = "/web",
-        .partition_label = NULL,
-        .max_files = 5,
-        .format_if_mount_failed = true
-    };
-    esp_vfs_spiffs_register(&conf);
+    const float input_data[15] = {13.6, 18.2, 11.3, 14.5, 17.8, 19.0, 21.3, 23.4, 21.7, 16.5, 19.7, 28.3, 24.2, 20.7, 9.3};
 
-    start_https_server();
+    ESP_LOGI(TAG, "The value predicted is: %d", predict_class(input_data));
+
+    /* Start the file server */
+    ESP_ERROR_CHECK(start_file_server(base_path));
+    ESP_LOGI(TAG, "File server started");
 }
-
-
-

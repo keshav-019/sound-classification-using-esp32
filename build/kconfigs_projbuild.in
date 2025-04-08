@@ -1,0 +1,8 @@
+source "/home/survivor/esp/esp-idf/components/bootloader/Kconfig.projbuild"
+source "/home/survivor/esp/esp-idf/components/esp_app_format/Kconfig.projbuild"
+source "/home/survivor/esp/esp-idf/components/esp_rom/Kconfig.projbuild"
+source "/home/survivor/esp/esp-idf/components/esptool_py/Kconfig.projbuild"
+source "/home/survivor/esp/esp-idf/components/partition_table/Kconfig.projbuild"
+source "/home/survivor/Desktop/sound_classification_file_serving/main/Kconfig.projbuild"
+source "/home/survivor/Desktop/sound_classification_file_serving/managed_components/espressif__esp-nn/Kconfig.projbuild"
+source "/home/survivor/esp/esp-idf/examples/common_components/protocol_examples_common/Kconfig.projbuild"

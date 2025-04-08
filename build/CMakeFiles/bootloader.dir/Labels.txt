@@ -1,0 +1,13 @@
+# Target labels
+ bootloader
+# Source files and their labels
+/home/survivor/Desktop/sound_classification_file_serving/build/CMakeFiles/bootloader
+/home/survivor/Desktop/sound_classification_file_serving/build/CMakeFiles/bootloader.rule
+/home/survivor/Desktop/sound_classification_file_serving/build/CMakeFiles/bootloader-complete.rule
+/home/survivor/Desktop/sound_classification_file_serving/build/bootloader-prefix/src/bootloader-stamp/bootloader-build.rule
+/home/survivor/Desktop/sound_classification_file_serving/build/bootloader-prefix/src/bootloader-stamp/bootloader-configure.rule
+/home/survivor/Desktop/sound_classification_file_serving/build/bootloader-prefix/src/bootloader-stamp/bootloader-download.rule
+/home/survivor/Desktop/sound_classification_file_serving/build/bootloader-prefix/src/bootloader-stamp/bootloader-install.rule
+/home/survivor/Desktop/sound_classification_file_serving/build/bootloader-prefix/src/bootloader-stamp/bootloader-mkdir.rule
+/home/survivor/Desktop/sound_classification_file_serving/build/bootloader-prefix/src/bootloader-stamp/bootloader-patch.rule
+/home/survivor/Desktop/sound_classification_file_serving/build/bootloader-prefix/src/bootloader-stamp/bootloader-update.rule

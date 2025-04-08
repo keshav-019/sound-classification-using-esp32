@@ -1,0 +1,85 @@
+[1/5] cd /home/survivor/Desktop/sound_classification_file_serving/build/esp-idf/esptool_py && /home/survivor/.espressif/python_env/idf5.3_py3.12_env/bin/python /home/survivor/esp/esp-idf/components/partition_table/check_sizes.py --offset 0x8000 partition --type app /home/survivor/Desktop/sound_classification_file_serving/build/partition_table/partition-table.bin /home/survivor/Desktop/sound_classification_file_serving/build/file_server.bin
+file_server.bin binary size 0x111920 bytes. Smallest app partition is 0xe00000 bytes. 0xcee6e0 bytes (92%) free.
+[2/5] Performing build step for 'bootloader'
+[1/1] cd /home/survivor/Desktop/sound_classification_file_serving/build/bootloader/esp-idf/esptool_py && /home/survivor/.espressif/python_env/idf5.3_py3.12_env/bin/python /home/survivor/esp/esp-idf/components/partition_table/check_sizes.py --offset 0x8000 bootloader 0x0 /home/survivor/Desktop/sound_classification_file_serving/build/bootloader/bootloader.bin
+Bootloader binary size 0x5490 bytes. 0x2b70 bytes (34%) free.
+[3/5] No install step for 'bootloader'
+[4/5] Completed 'bootloader'
+[4/5] cd /home/survivor/esp/esp-idf/components/esptool_py && /usr/bin/cmake -D IDF_PATH=/home/survivor/esp/esp-idf -D "SERIAL_TOOL=/home/survivor/.espressif/python_env/idf5.3_py3.12_env/bin/python;;/home/survivor/esp/esp-idf/components/esptool_py/esptool/esptool.py;--chip;esp32s3" -D "SERIAL_TOOL_ARGS=--before=default_reset;--after=hard_reset;write_flash;@flash_args" -D WORKING_DIRECTORY=/home/survivor/Desktop/sound_classification_file_serving/build -P /home/survivor/esp/esp-idf/components/esptool_py/run_serial_tool.cmake
+esptool.py --chip esp32s3 -p /dev/ttyACM1 -b 460800 --before=default_reset --after=hard_reset write_flash --flash_mode dio --flash_freq 80m --flash_size 16MB 0x0 bootloader/bootloader.bin 0x10000 file_server.bin 0x8000 partition_table/partition-table.bin
+esptool.py v4.8.1
+Serial port /dev/ttyACM1
+Connecting....
+Chip is ESP32-S3 (QFN56) (revision v0.1)
+Features: WiFi, BLE, Embedded PSRAM 2MB (AP_3v3)
+Crystal is 40MHz
+MAC: 7c:df:a1:ee:d6:94
+Uploading stub...
+Running stub...
+Stub running...
+Changing baud rate to 460800
+Changed.
+Configuring flash size...
+Flash will be erased from 0x00000000 to 0x00005fff...
+Flash will be erased from 0x00010000 to 0x00121fff...
+Flash will be erased from 0x00008000 to 0x00008fff...
+SHA digest in image updated
+Compressed 21648 bytes to 13326...
+Writing at 0x00000000... (100 %)
+Wrote 21648 bytes (13326 compressed) at 0x00000000 in 0.7 seconds (effective 251.3 kbit/s)...
+Hash of data verified.
+Compressed 1120544 bytes to 724461...
+Writing at 0x00010000... (2 %)
+Writing at 0x0001d570... (4 %)
+Writing at 0x0002a729... (6 %)
+Writing at 0x00032855... (8 %)
+Writing at 0x0003b791... (11 %)
+Writing at 0x0003fb58... (13 %)
+Writing at 0x000458af... (15 %)
+Writing at 0x0004c1e7... (17 %)
+Writing at 0x00051f3b... (20 %)
+Writing at 0x00057893... (22 %)
+Writing at 0x0005ca6c... (24 %)
+Writing at 0x00061e60... (26 %)
+Writing at 0x00067e11... (28 %)
+Writing at 0x0006e0bf... (31 %)
+Writing at 0x00073b7d... (33 %)
+Writing at 0x000795d5... (35 %)
+Writing at 0x0007f27a... (37 %)
+Writing at 0x000850e8... (40 %)
+Writing at 0x0008aee5... (42 %)
+Writing at 0x00090f7a... (44 %)
+Writing at 0x000973d0... (46 %)
+Writing at 0x0009c301... (48 %)
+Writing at 0x000a1249... (51 %)
+Writing at 0x000a6683... (53 %)
+Writing at 0x000abafd... (55 %)
+Writing at 0x000b0c40... (57 %)
+Writing at 0x000b5eff... (60 %)
+Writing at 0x000bbb89... (62 %)
+Writing at 0x000c12e5... (64 %)
+Writing at 0x000c700b... (66 %)
+Writing at 0x000cd43f... (68 %)
+Writing at 0x000d30d2... (71 %)
+Writing at 0x000d88a9... (73 %)
+Writing at 0x000dfc75... (75 %)
+Writing at 0x000e89ad... (77 %)
+Writing at 0x000ee99e... (80 %)
+Writing at 0x000f3f40... (82 %)
+Writing at 0x000f841d... (84 %)
+Writing at 0x000fc94e... (86 %)
+Writing at 0x00100e88... (88 %)
+Writing at 0x00107949... (91 %)
+Writing at 0x0010e44f... (93 %)
+Writing at 0x001144fc... (95 %)
+Writing at 0x0011ae91... (97 %)
+Writing at 0x0011ff3a... (100 %)
+Wrote 1120544 bytes (724461 compressed) at 0x00010000 in 18.8 seconds (effective 477.5 kbit/s)...
+Hash of data verified.
+Compressed 3072 bytes to 121...
+Writing at 0x00008000... (100 %)
+Wrote 3072 bytes (121 compressed) at 0x00008000 in 0.1 seconds (effective 364.0 kbit/s)...
+Hash of data verified.
+
+Leaving...
+Hard resetting via RTS pin...

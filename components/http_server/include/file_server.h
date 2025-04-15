@@ -27,6 +27,7 @@
 #define MAX_FILES 50
 #define LIST_BUFFER_SIZE 4096
 #define MAX_PATH_LENGTH 512
+#define ESP_VFS_PATH_MAX    300
 
 struct file_server_data {
     char base_path[ESP_VFS_PATH_MAX + 1];
@@ -65,7 +66,9 @@ esp_err_t send_index_html(httpd_req_t *req);
 
 esp_err_t upload_post_handler(httpd_req_t *req);
 
-esp_err_t delete_post_handler(httpd_req_t *req)
+esp_err_t delete_post_handler(httpd_req_t *req);
+
+esp_err_t mount_storage(const char* base_path);
 
 esp_err_t start_file_server(const char *base_path);
 

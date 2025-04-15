@@ -18,8 +18,9 @@
 #include "esp_err.h"
 #include "nvs_flash.h"
 #include "protocol_examples_common.h"
-#include "file_serving_example_common.h"
+#include "file_server.h"
 #include "model_predictor.h"
+#include "soft_access_point.h"
 
 /* This example demonstrates how to create file server
  * using esp_http_server. This file has only startup code.
@@ -31,25 +32,25 @@ static const char *TAG = "example";
 void app_main(void)
 {
     ESP_LOGI(TAG, "Starting example");
+    
+    // 1. Initialize NVS (required for WiFi)
     ESP_ERROR_CHECK(nvs_flash_init());
-    ESP_ERROR_CHECK(esp_netif_init());
+    
+    // 2. Create event loop FIRST (before any WiFi operations)
     ESP_ERROR_CHECK(esp_event_loop_create_default());
-
-    /* Initialize file storage */
+    
+    // 3. Initialize WiFi in AP mode
+    soft_access_create(); // Now properly modified
+    
+    // 4. Mount storage
     const char* base_path = "/data";
     ESP_ERROR_CHECK(mount_storage(base_path));
-
-    /* This helper function configures Wi-Fi or Ethernet, as selected in menuconfig.
-     * Read "Establishing Wi-Fi or Ethernet Connection" section in
-     * examples/protocols/README.md for more information about this function.
-     */
-    ESP_ERROR_CHECK(example_connect());
-
-    const float input_data[15] = {13.6, 18.2, 11.3, 14.5, 17.8, 19.0, 21.3, 23.4, 21.7, 16.5, 19.7, 28.3, 24.2, 20.7, 9.3};
-
-    ESP_LOGI(TAG, "The value predicted is: %d", predict_class(input_data));
-
-    /* Start the file server */
+    
+    // 5. Start web server
     ESP_ERROR_CHECK(start_file_server(base_path));
-    ESP_LOGI(TAG, "File server started");
+    ESP_LOGI(TAG, "File server started at http://192.168.4.1");
+    
+    // Your prediction code (if needed)
+    const float input_data[15] = {13.6, 18.2, 11.3, 14.5, 17.8, 19.0, 21.3, 23.4, 21.7, 16.5, 19.7, 28.3, 24.2, 20.7, 9.3};
+    ESP_LOGI(TAG, "The value predicted is: %d", predict_class(input_data));
 }

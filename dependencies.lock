@@ -26,6 +26,16 @@ dependencies:
     - esp32s3
     - esp32p4
     version: 3.1.1
+  espressif/esp-dsp:
+    component_hash: fa7fe74305df6da25867437ebcd4213e047cbfc0556cf92067ab657fce537c6e
+    dependencies:
+    - name: idf
+      require: private
+      version: '>=4.2'
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    version: 1.5.2
   espressif/esp-nn:
     component_hash: 5d99b2991c109211ea5722bae481bbe243dc7e064d9ffd9e5dfa58aba7be9d88
     dependencies:
@@ -73,8 +83,9 @@ dependencies:
 direct_dependencies:
 - espressif/esp-cryptoauthlib
 - espressif/esp-dl
+- espressif/esp-dsp
 - espressif/esp-tflite-micro
 - protocol_examples_common
-manifest_hash: 60f838352338d3ca84b172ad7ccb91c95a21ccd4825d596d4efcff3782a65980
+manifest_hash: fa1591ee5e2d7693ee24f5911a9ec57ef42f14058cbe6c26e8270a49036ebf74
 target: esp32s3
 version: 2.0.0

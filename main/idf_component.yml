@@ -4,3 +4,4 @@ dependencies:
   espressif/esp-cryptoauthlib: '*'
   espressif/esp-tflite-micro: '*'
   espressif/esp-dl: '*'
+  espressif/esp-dsp: '*'

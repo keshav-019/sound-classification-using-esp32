@@ -4,22 +4,19 @@
  * SPDX-License-Identifier: Unlicense OR CC0-1.0
  */
 
-/* I2S Digital Microphone Recording Example */
 #include "i2s_recorder_main.h"
+#include <dirent.h>
 
 static const char *TAG = "pdm_rec_example";
 
 #define CONFIG_EXAMPLE_BIT_SAMPLE       16
 #define SPI_DMA_CHAN                    SPI_DMA_CH_AUTO
-#define NUM_CHANNELS                    (1) // For mono recording only!
+#define NUM_CHANNELS                    (1)
 #define SD_MOUNT_POINT                  "/sdcard"
 #define SAMPLE_SIZE                     (CONFIG_EXAMPLE_BIT_SAMPLE * 1024)
 #define BYTE_RATE                       (CONFIG_EXAMPLE_SAMPLE_RATE * (CONFIG_EXAMPLE_BIT_SAMPLE / 8)) * NUM_CHANNELS
 #define CONFIG_EXAMPLE_REC_TIME         15
 
-// When testing SD and SPI modes, keep in mind that once the card has been
-// initialized in SPI mode, it can not be reinitialized in SD mode without
-// toggling power to the card.
 sdmmc_host_t host = SDSPI_HOST_DEFAULT();
 sdmmc_card_t *card;
 i2s_chan_handle_t rx_handle = NULL;
@@ -28,12 +25,38 @@ static int16_t i2s_readraw_buff[SAMPLE_SIZE];
 size_t bytes_read;
 const int WAVE_HEADER_SIZE = 44;
 
-void mount_sdcard(void)
-{
+// Global map to keep track of recording numbers per category
+static int category_counter = 0;
+
+// Function to get the next available recording number for a category
+static int get_next_recording_number(const char* category_name) {
+    char dirpath[256];
+    snprintf(dirpath, sizeof(dirpath), "%s/%s", SD_MOUNT_POINT, category_name);
+    
+    DIR *dir = opendir(dirpath);
+    if (!dir) {
+        return 1; // First recording for this category
+    }
+
+    int max_num = 0;
+    struct dirent *entry;
+    while ((entry = readdir(dir)) != NULL) {
+        if (entry->d_type == DT_REG) {
+            int num;
+            if (sscanf(entry->d_name, "record_%d.wav", &num) == 1) {
+                if (num > max_num) {
+                    max_num = num;
+                }
+            }
+        }
+    }
+    closedir(dir);
+    
+    return max_num + 1;
+}
+
+void mount_sdcard(void) {
     esp_err_t ret;
-    // Options for mounting the filesystem.
-    // If format_if_mount_failed is set to true, SD card will be partitioned and
-    // formatted in case when mounting fails.
     esp_vfs_fat_sdmmc_mount_config_t mount_config = {
         .format_if_mount_failed = true,
         .max_files = 5,
@@ -55,8 +78,6 @@ void mount_sdcard(void)
         return;
     }
 
-    // This initializes the slot without card detect (CD) and write protect (WP) signals.
-    // Modify slot_config.gpio_cd and slot_config.gpio_wp if your board has these signals.
     sdspi_device_config_t slot_config = SDSPI_DEVICE_CONFIG_DEFAULT();
     slot_config.gpio_cs = CONFIG_EXAMPLE_SPI_CS_GPIO;
     slot_config.host_id = host.slot;
@@ -68,18 +89,15 @@ void mount_sdcard(void)
             ESP_LOGE(TAG, "Failed to mount filesystem.");
         } else {
             ESP_LOGE(TAG, "Failed to initialize the card (%s). "
-                     "Make sure SD card lines have pull-up resistors in place.", esp_err_to_name(ret));
+                    "Make sure SD card lines have pull-up resistors in place.", esp_err_to_name(ret));
         }
         return;
     }
 
-    // Card has been initialized, print its properties
     sdmmc_card_print_info(stdout, card);
 }
 
-void record_wav(uint32_t rec_time, const char* category_name)
-{
-    // Use POSIX and C standard library functions to work with files.
+void record_wav(uint32_t rec_time, const char* category_name) {
     int flash_wr_size = 0;
     ESP_LOGI(TAG, "Opening file");
 
@@ -87,24 +105,20 @@ void record_wav(uint32_t rec_time, const char* category_name)
     const wav_header_t wav_header =
         WAV_HEADER_PCM_DEFAULT(flash_rec_time, 16, CONFIG_EXAMPLE_SAMPLE_RATE, 1);
 
-    // Create full file path
-    char filepath[256];
-    snprintf(filepath, sizeof(filepath), "%s/%s/record.wav", SD_MOUNT_POINT, category_name);
-
     // Create directory if it doesn't exist
     char dirpath[256];
     snprintf(dirpath, sizeof(dirpath), "%s/%s", SD_MOUNT_POINT, category_name);
-    mkdir(dirpath, 0777);  // Create category directory with full permissions
+    mkdir(dirpath, 0777);
 
-    // First check if file exists before creating a new file.
-    struct stat st;
-    if (stat(filepath, &st) == 0) {
-        // Delete it if it exists
-        unlink(filepath);
-    }
+    // Get next available recording number
+    int recording_num = get_next_recording_number(category_name);
+    
+    // Create unique filename
+    char filepath[256];
+    snprintf(filepath, sizeof(filepath), "%s/%s/record_%d.wav", SD_MOUNT_POINT, category_name, recording_num);
 
     // Create new WAV file
-    FILE *f = fopen(filepath, "wb");  // Use "wb" for binary write mode
+    FILE *f = fopen(filepath, "wb");
     if (f == NULL) {
         ESP_LOGE(TAG, "Failed to open file for writing: %s", filepath);
         return;
@@ -119,13 +133,11 @@ void record_wav(uint32_t rec_time, const char* category_name)
 
     // Start recording
     while (flash_wr_size < flash_rec_time) {
-        // Read the RAW samples from the microphone
         if (i2s_channel_read(rx_handle, (char *)i2s_readraw_buff, SAMPLE_SIZE, &bytes_read, 1000) == ESP_OK) {
             ESP_LOGV(TAG, "[0] %d [1] %d [2] %d [3] %d", 
-                   i2s_readraw_buff[0], i2s_readraw_buff[1], 
-                   i2s_readraw_buff[2], i2s_readraw_buff[3]);
+                i2s_readraw_buff[0], i2s_readraw_buff[1], 
+                i2s_readraw_buff[2], i2s_readraw_buff[3]);
             
-            // Write the samples to the WAV file
             if (fwrite(i2s_readraw_buff, bytes_read, 1, f) != 1) {
                 ESP_LOGE(TAG, "Write failed at %d bytes", flash_wr_size);
                 break;
@@ -136,24 +148,20 @@ void record_wav(uint32_t rec_time, const char* category_name)
         }
     }
 
-    ESP_LOGI(TAG, "Recording done! Wrote %d bytes", flash_wr_size);
+    ESP_LOGI(TAG, "Recording done! Wrote %d bytes to %s", flash_wr_size, filepath);
     fclose(f);
-    ESP_LOGI(TAG, "File written: %s", filepath);
 
-    // All done, unmount partition and disable SPI peripheral
     esp_vfs_fat_sdcard_unmount(SD_MOUNT_POINT, card);
     ESP_LOGI(TAG, "Card unmounted");
-    spi_bus_free(host.slot);  // Deinitialize the bus
+    spi_bus_free(host.slot);
 }
 
-void init_microphone(void)
-{
+void init_microphone(void) {
     i2s_chan_config_t chan_cfg = I2S_CHANNEL_DEFAULT_CONFIG(I2S_NUM_AUTO, I2S_ROLE_MASTER);
     ESP_ERROR_CHECK(i2s_new_channel(&chan_cfg, NULL, &rx_handle));
 
     i2s_pdm_rx_config_t pdm_rx_cfg = {
         .clk_cfg = I2S_PDM_RX_CLK_DEFAULT_CONFIG(CONFIG_EXAMPLE_SAMPLE_RATE),
-        /* The default mono slot is the left slot (whose 'select pin' of the PDM microphone is pulled down) */
         .slot_cfg = I2S_PDM_RX_SLOT_DEFAULT_CONFIG(I2S_DATA_BIT_WIDTH_16BIT, I2S_SLOT_MODE_MONO),
         .gpio_cfg = {
             .clk = CONFIG_EXAMPLE_I2S_CLK_GPIO,
@@ -173,13 +181,9 @@ void start_recording(const char* category_name) {
     init_microphone();
     record_wav(CONFIG_EXAMPLE_REC_TIME, category_name);
     
-    // Cleanup
     ESP_ERROR_CHECK(i2s_channel_disable(rx_handle));
     ESP_ERROR_CHECK(i2s_del_channel(rx_handle));
     
-    // Free the category_name string (allocated via strdup in the handler)
     free((void*)category_name);
-    
-    // Delete this task when done
     vTaskDelete(NULL);
 }

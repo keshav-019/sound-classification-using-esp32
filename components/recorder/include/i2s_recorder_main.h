@@ -1,4 +1,7 @@
+#pragma once
+
 /* I2S Digital Microphone Recording Example */
+#include <dirent.h>
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
@@ -16,11 +19,17 @@
 #include "driver/spi_common.h"
 #include "sdmmc_cmd.h"
 #include "format_wav.h"
-#include <string.h>
+#include "model_predictor.h"
+#include "file_operations.h"
+
+// custom library addition
+#include <stdlib.h>
+#include "driver/spi_master.h"
+#include "soc/gpio_struct.h"
+#include "soc/uart_struct.h"
 #include "esp_dsp.h"
-#include "dsp_common.h"
-#include "dsps_fft2r.h"
-#include "dsps_dct.h"
+
+
 // MFCC configuration
 #define N_FFT 8192
 #define N_MEL_BANKS 13

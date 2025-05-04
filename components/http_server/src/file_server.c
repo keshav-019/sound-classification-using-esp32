@@ -1,9 +1,3 @@
-/*
-* SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
-*
-* SPDX-License-Identifier: Unlicense OR CC0-1.0
-*/
-
 #include <stdio.h>
 #include <string.h>
 #include <sys/param.h>
@@ -28,6 +22,19 @@
 
 static const char *TAG = "file_server";
 
+/**
+ * @brief Extracts filesystem path from URI
+ * @param dest Destination buffer for path
+ * @param base_path Base filesystem path (e.g., "/sdcard")
+ * @param uri Request URI (e.g., "/files/data.txt")
+ * @param destsize Size of destination buffer
+ * @return Pointer to path relative to base_path, or NULL if path too long
+ * 
+ * @example 
+ * char path[256];
+ * get_path_from_uri(path, "/sdcard", "/recordings/audio.wav", sizeof(path));
+ * // Returns pointer to "/recordings/audio.wav" within path buffer
+ */
 static const char* get_path_from_uri(char *dest, const char *base_path, const char *uri, size_t destsize)
 {
     const size_t base_pathlen = strlen(base_path);
@@ -45,6 +52,14 @@ static const char* get_path_from_uri(char *dest, const char *base_path, const ch
     return dest + base_pathlen;
 }
 
+/**
+* @brief Sets HTTP Content-Type header based on file extension
+* @param req HTTP request object
+* @param filename Name of the file being served
+* @return ESP_OK on success, error code otherwise
+* 
+* @note Supports common web file types: HTML, CSS, JS, images, PDF
+*/
 static esp_err_t set_content_type_from_file(httpd_req_t *req, const char *filename)
 {
     if (strcasecmp(&filename[strlen(filename) - 4], ".pdf") == 0) {
@@ -52,7 +67,7 @@ static esp_err_t set_content_type_from_file(httpd_req_t *req, const char *filena
     } else if (strcasecmp(&filename[strlen(filename) - 5], ".html") == 0) {
         return httpd_resp_set_type(req, "text/html");
     } else if (strcasecmp(&filename[strlen(filename) - 4], ".jpg") == 0 ||
-               strcasecmp(&filename[strlen(filename) - 5], ".jpeg") == 0) {
+            strcasecmp(&filename[strlen(filename) - 5], ".jpeg") == 0) {
         return httpd_resp_set_type(req, "image/jpeg");
     } else if (strcasecmp(&filename[strlen(filename) - 4], ".png") == 0) {
         return httpd_resp_set_type(req, "image/png");
@@ -66,6 +81,13 @@ static esp_err_t set_content_type_from_file(httpd_req_t *req, const char *filena
     return httpd_resp_set_type(req, "text/plain");
 }
 
+/**
+* @brief Forcefully closes a HTTP connection
+* @param hd HTTP server handle
+* @param sockfd Socket file descriptor to close
+* 
+* @note Used as a callback for clean connection termination
+*/
 static void httpd_close_func(httpd_handle_t hd, int sockfd)
 {
     shutdown(sockfd, SHUT_RDWR);
@@ -73,13 +95,26 @@ static void httpd_close_func(httpd_handle_t hd, int sockfd)
     ESP_LOGD(TAG, "Forcefully closed socket %d", sockfd);
 }
 
-// Timer callback at file scope
+/**
+* @brief Timer callback to stop recording after timeout
+* @param arg Pointer to recording flag (bool)
+*/
 static void recording_timer_callback(void* arg) {
     bool* recording_flag = (bool*)arg;
     *recording_flag = false;
+    ESP_LOGI(TAG, "Recording timer expired - flag set to false");
 }
 
-// Update the start_recording_handler function
+/**
+* @brief Starts audio recording via HTTP request
+* @param req HTTP request containing 'category' query parameter
+* @return ESP_OK on success, error code on failure
+* 
+* @example 
+* GET /start_recording?category=voice
+* 
+* @note Creates a new task for recording and sets a timer to stop it
+*/
 esp_err_t start_recording_handler(httpd_req_t *req) {
     static bool is_recording = false;
     
@@ -131,62 +166,177 @@ esp_err_t start_recording_handler(httpd_req_t *req) {
     return ESP_OK;
 }
 
-esp_err_t list_files_handler(httpd_req_t *req) {
-    char path[256];
-    snprintf(path, sizeof(path), "%s", SD_MOUNT_POINT); // Start with mount point
+/**
+* @brief Sanitizes file paths to prevent directory traversal
+* @param input Raw input path
+* @param output Buffer for sanitized output
+* @param output_len Size of output buffer
+* @return ESP_OK on success, ESP_FAIL on invalid path
+* 
+* @note Blocks paths containing "../" or "..\"
+*/
+esp_err_t sanitize_path(const char *input, char *output, size_t output_len) {
+    if (!input || !output || output_len == 0) {
+        return ESP_FAIL;
+    }
 
-    size_t query_len = httpd_req_get_url_query_len(req);
-    if (query_len > 0) {
-        char* query = malloc(query_len + 1);
+    size_t i = 0;
+    while (*input && i < output_len - 1) {
+        if (isalnum((unsigned char)*input) || *input == '_' || *input == '-' || 
+            *input == '/' || (*input == '.' && !(input[0] == '.' && input[1] == '/'))) {
+            output[i++] = *input;
+        }
+        input++;
+    }
+    output[i] = '\0';
+    
+    if (strstr(output, "../") || strstr(output, "..\\")) {
+        return ESP_FAIL;
+    }
+    
+    return ESP_OK;
+}
+
+/**
+ * @brief HTTP handler for listing directory contents in JSON format
+ * @param req HTTP request object
+ * @return ESP_OK on success, appropriate error code on failure
+ * 
+ * @handles GET /list_files[?path=<directory>]
+ * 
+ * @response JSON structure:
+ * {
+ *   "path": "/sdcard",
+ *   "files": [
+ *     {
+ *       "name": "file1.txt",
+ *       "path": "/sdcard/file1.txt",
+ *       "size": 1024,
+ *       "type": "file",
+ *       "modified": "2023-01-01 12:00:00"
+ *     },
+ *     {
+ *       "name": "folder1",
+ *       "path": "/sdcard/folder1",
+ *       "size": 4096,
+ *       "type": "directory",
+ *       "modified": "2023-01-01 12:05:00"
+ *     }
+ *   ]
+ * }
+ * 
+ * @note Requires mounted SD card. Path parameter is optional (defaults to root).
+ */
+esp_err_t list_files_handler(httpd_req_t *req) {
+    if (req == NULL) {
+        ESP_LOGE(TAG, "Null request pointer");
+        return ESP_FAIL;
+    }
+
+    // First ensure SD card is mounted
+    if (!sd_card_mounted) {
+        mount_sdcard();
+        if (!sd_card_mounted) {  // Verify it worked
+            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "SD card mount failed");
+            return ESP_FAIL;
+        }
+    }
+
+    // Build base path with safety checks
+    char path[256];
+    if (snprintf(path, sizeof(path), "%s", SD_MOUNT_POINT) >= sizeof(path)) {
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Path too long");
+        return ESP_FAIL;
+    }
+
+    // Process query parameters if they exist
+    size_t query_len = httpd_req_get_url_query_len(req) + 1; // +1 for null terminator
+    if (query_len > 1) { // >1 because empty string would be just null terminator
+        char* query = malloc(query_len);
         if (!query) {
-            return ESP_ERR_NO_MEM;
+            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Memory allocation failed");
+            return ESP_FAIL;
         }
 
-        if (httpd_req_get_url_query_str(req, query, query_len + 1) == ESP_OK) {
-            char param[128];
-            if (httpd_query_key_value(query, "path", param, sizeof(param)) == ESP_OK) {
-                // Sanitize and append path
-                if (param[0] == '/') {
-                    snprintf(path, sizeof(path), "%s%s", SD_MOUNT_POINT, param);
-                } else {
-                    snprintf(path, sizeof(path), "%s/%s", SD_MOUNT_POINT, param);
-                }
+        if (httpd_req_get_url_query_str(req, query, query_len) != ESP_OK) {
+            free(query);
+            httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Invalid query string");
+            return ESP_FAIL;
+        }
+
+        char param[128];
+        if (httpd_query_key_value(query, "path", param, sizeof(param)) == ESP_OK) {
+            // Sanitize path input
+            char sanitized[128];
+            if (sanitize_path(param, sanitized, sizeof(sanitized)) != ESP_OK) {
+                free(query);
+                httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Invalid path characters");
+                return ESP_FAIL;
+            }
+
+            // Construct full path
+            const char *format = (sanitized[0] == '/') ? "%s%s" : "%s/%s";
+            if (snprintf(path, sizeof(path), format, SD_MOUNT_POINT, sanitized) >= sizeof(path)) {
+                free(query);
+                httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Path too long");
+                return ESP_FAIL;
             }
         }
         free(query);
     }
 
-    // Security checks
-    if (strstr(path, "../") || strstr(path, "..\\")) {
-        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Invalid path");
-        return ESP_FAIL;
-    }
-
-    // Ensure proper path termination
-    if (strlen(path) > 1 && path[strlen(path)-1] == '/') {
-        path[strlen(path)-1] = '\0';
-    }
-
-    // Verify directory exists
+    // Verify path exists and is a directory
     struct stat st;
-    if (stat(path, &st) != 0 || !S_ISDIR(st.st_mode)) {
-        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "Directory not found");
+    if (stat(path, &st) != 0) {
+        ESP_LOGE(TAG, "stat failed for %s (errno %d)", path, errno);
+        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "Path not found");
         return ESP_FAIL;
     }
 
-    // Generate and send response
+    if (!S_ISDIR(st.st_mode)) {
+        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Not a directory");
+        return ESP_FAIL;
+    }
+
+    // Generate JSON listing
     char *json_response = list_files_json(path);
     if (!json_response) {
         httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Failed to generate listing");
         return ESP_FAIL;
     }
 
-    httpd_resp_set_type(req, "application/json");
-    esp_err_t ret = httpd_resp_send(req, json_response, strlen(json_response));
+    // Set response type before sending
+    esp_err_t ret = httpd_resp_set_type(req, "application/json");
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to set response type: %s", esp_err_to_name(ret));
+        free(json_response);
+        return ret;
+    }
+
+    // Send response
+    ret = httpd_resp_send(req, json_response, strlen(json_response));
     free(json_response);
+    
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to send response: %s", esp_err_to_name(ret));
+    }
     return ret;
 }
 
+/**
+ * @brief HTTP handler for deleting files
+ * @param req HTTP request containing filename in query string
+ * @return ESP_OK on success, error code on failure
+ * 
+ * @handles GET /delete_file?filename=<path>
+ * 
+ * @example 
+ * DELETE /delete_file?filename=recordings/old.wav
+ * 
+ * @response "File deleted successfully" or error message
+ * 
+ * @security Checks for valid path format before deletion
+ */
 esp_err_t delete_file_handler(httpd_req_t *req) {
     char filepath[MAX_PATH_LENGTH];
     char decoded_path[MAX_PATH_LENGTH];
@@ -212,6 +362,19 @@ esp_err_t delete_file_handler(httpd_req_t *req) {
     return ESP_OK;
 }
 
+/**
+ * @brief HTTP handler for downloading files
+ * @param req HTTP request containing filename in query string
+ * @return ESP_OK on success, error code on failure
+ * 
+ * @handles GET /download_file?filename=<path>
+ * 
+ * @response 
+ * - Binary file content with Content-Disposition: attachment header
+ * - Appropriate Content-Type based on file extension
+ * 
+ * @note Uses chunked transfer encoding for large files
+ */
 esp_err_t download_file_handler(httpd_req_t *req) {
     char filepath[MAX_PATH_LENGTH];
     char decoded_path[MAX_PATH_LENGTH];
@@ -262,6 +425,17 @@ esp_err_t download_file_handler(httpd_req_t *req) {
     return ESP_OK;
 }
 
+/**
+ * @brief Serves embedded JavaScript file
+ * @param req HTTP request object
+ * @return ESP_OK on success
+ * 
+ * @handles GET /script.js
+ * 
+ * @response 
+ * - Content-Type: application/javascript
+ * - Embedded JavaScript file content
+ */
 esp_err_t script_js_handler(httpd_req_t *req)
 {
     extern const unsigned char script_js_start[] asm("_binary_script_js_start");
@@ -271,6 +445,17 @@ esp_err_t script_js_handler(httpd_req_t *req)
     return httpd_resp_send(req, (const char *)script_js_start, script_js_end - script_js_start);
 }
 
+/**
+ * @brief Serves embedded CSS stylesheet
+ * @param req HTTP request object
+ * @return ESP_OK on success
+ * 
+ * @handles GET /style.css
+ * 
+ * @response 
+ * - Content-Type: text/css
+ * - Embedded CSS file content
+ */
 esp_err_t style_css_get_handler(httpd_req_t *req)
 {
     extern const unsigned char style_css_start[] asm("_binary_style_css_start");
@@ -280,6 +465,17 @@ esp_err_t style_css_get_handler(httpd_req_t *req)
     return httpd_resp_send(req, (const char *)style_css_start, style_css_end - style_css_start);
 }
 
+/**
+ * @brief Serves embedded favicon
+ * @param req HTTP request object
+ * @return ESP_OK on success
+ * 
+ * @handles GET /favicon.ico
+ * 
+ * @response 
+ * - Content-Type: image/x-icon
+ * - Embedded favicon file content
+ */
 esp_err_t favicon_get_handler(httpd_req_t *req)
 {
     extern const unsigned char favicon_ico_start[] asm("_binary_favicon_ico_start");
@@ -289,6 +485,18 @@ esp_err_t favicon_get_handler(httpd_req_t *req)
     return httpd_resp_send(req, (const char *)favicon_ico_start, favicon_ico_end - favicon_ico_start);
 }
 
+/**
+ * @brief Serves the main HTML interface
+ * @param req HTTP request object
+ * @return ESP_OK on success, error code on failure
+ * 
+ * @handles GET / or /index.html
+ * 
+ * @response 
+ * - Content-Type: text/html
+ * - Embedded HTML file content
+ * - Forces connection close after sending
+ */
 esp_err_t send_index_html(httpd_req_t *req)
 {
     extern const unsigned char index_start[] asm("_binary_index_html_start");
@@ -304,6 +512,19 @@ esp_err_t send_index_html(httpd_req_t *req)
     return ret;
 }
 
+/**
+ * @brief Handles file deletion via POST request
+ * @param req HTTP request object containing path in URI
+ * @return ESP_OK on success, error code on failure
+ * 
+ * @handles POST /delete/<path>
+ * 
+ * @response 
+ * - 303 See Other redirect to home page
+ * - Sets Connection: close header
+ * 
+ * @note Uses server_data context for base path resolution
+ */
 esp_err_t delete_post_handler(httpd_req_t *req)
 {
     struct file_server_data *server_data = req->user_ctx;
@@ -326,6 +547,21 @@ esp_err_t delete_post_handler(httpd_req_t *req)
     return httpd_resp_sendstr(req, "File deleted successfully");
 }
 
+/**
+ * @brief Main file download handler with special cases
+ * @param req HTTP request object
+ * @return ESP_OK on success, error code on failure
+ * 
+ * @handles GET
+ * 
+ * @behavior
+ * 1. Serves index.html for root path
+ * 2. Handles known static files (CSS/JS/favicon)
+ * 3. Sends regular files with proper Content-Type
+ * 4. Uses chunked transfer for large files
+ * 
+ * @note Uses server_data context for base path and scratch buffer
+ */
 esp_err_t download_get_handler(httpd_req_t *req)
 {
     struct file_server_data *server_data = req->user_ctx;
@@ -378,6 +614,45 @@ esp_err_t download_get_handler(httpd_req_t *req)
     return ESP_OK;
 }
 
+/**
+ * @brief HTTP GET handler for prediction endpoint
+ * @param req HTTP request object
+ * @return ESP_OK on success, error code on failure
+ * 
+ * @handles GET /prediction
+ * 
+ * @response Plain text response "Crying Baby"
+ * 
+ * @note This is a simple static response handler that always returns
+ *       the same prediction value. In a real implementation, this would
+ *       call your audio classification model and return dynamic results.
+ */
+static esp_err_t prediction_handler(httpd_req_t *req)
+{
+    // Set content type to JSON
+    httpd_resp_set_type(req, "application/json");
+    
+    // Create JSON response
+    const char* response = "{\"category\":\"Crying Baby\"}";
+    esp_err_t ret = httpd_resp_send(req, response, strlen(response));
+    
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to send prediction response: %s", esp_err_to_name(ret));
+    }
+    return ret;
+}
+
+/**
+ * @brief Initializes and starts the HTTP file server
+ * @param base_path Root filesystem path to serve files from (e.g., "/sdcard")
+ * @return ESP_OK on success, error code on failure
+ * 
+ * @note Registers multiple URI handlers for:
+ * - File operations (list/delete/download)
+ * - Static file serving
+ * - Recording control
+ * - Web interface
+ */
 esp_err_t start_file_server(const char *base_path)
 {
     static struct file_server_data *server_data = NULL;
@@ -411,6 +686,7 @@ esp_err_t start_file_server(const char *base_path)
         {.uri = "/list_files", .method = HTTP_GET, .handler = list_files_handler, .user_ctx = NULL},
         {.uri = "/delete_file", .method = HTTP_GET, .handler = delete_file_handler, .user_ctx = NULL},
         {.uri = "/download_file", .method = HTTP_GET, .handler = download_file_handler, .user_ctx = NULL},
+        {.uri = "/predict", .method = HTTP_GET, .handler = prediction_handler, .user_ctx = server_data},
         {.uri = "/*", .method = HTTP_GET, .handler = download_get_handler, .user_ctx = server_data},
     };
 
@@ -418,5 +694,6 @@ esp_err_t start_file_server(const char *base_path)
         httpd_register_uri_handler(server, &handlers[i]);
     }
 
+    ESP_LOGI(TAG, "File server started on path: %s", base_path);
     return ESP_OK;
 }

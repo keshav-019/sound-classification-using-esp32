@@ -1,8 +1,3 @@
-/*
- * SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
- *
- * SPDX-License-Identifier: Unlicense OR CC0-1.0
- */
 /* HTTP File Server Example, common declarations
 
    This example code is in the Public Domain (or CC0 licensed, at your option.)

@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef MODEL_PREDICTOR_H
 #define MODEL_PREDICTOR_H
 

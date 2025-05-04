@@ -1,4 +1,4 @@
-const tabs = ["record", "predict", "ota", "files"];
+const tabs = ["record", "predict", "ota"];
 tabs.forEach((tab) => {
   document.getElementById(`tab-${tab}-btn`).addEventListener("click", () => {
     tabs.forEach((t) => {

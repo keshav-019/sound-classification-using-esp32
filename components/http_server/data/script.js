@@ -14,13 +14,13 @@ function startRecording() {
   const category = document.getElementById("categorySelect").value;
   fetch(`/start_recording?category=${category}`)
     .then(() => {
-      alert("Recording started for 15 seconds...");
+      // alert("Recording started for 15 seconds...");
       let progress = 0;
       const interval = setInterval(() => {
         progress += 1;
         document.getElementById("recordProgress").style.width = `${progress}%`;
         if (progress >= 100) clearInterval(interval);
-      }, 150);
+      }, 50);
     })
     .catch(() => alert("Failed to start recording."));
 }
@@ -64,43 +64,44 @@ function uploadOTA() {
     .catch(() => alert("OTA upload failed."));
 }
 
-// Add new functions
-function refreshFiles() {
-  fetch("/list_files")
+let currentPath = "/";
+
+function refreshFiles(path = currentPath) {
+  console.log("The path currently is: ", currentPath);
+
+  fetch(`/list_files?path=${path}`)
     .then((res) => res.json())
     .then((data) => {
-      const fileList = document
-        .getElementById("fileList")
-        .querySelector("tbody");
+      currentPath = data.path;
+      document.getElementById("currentPath").textContent = currentPath;
+      
+      const fileList = document.getElementById("fileList").querySelector("tbody");
       fileList.innerHTML = "";
+
+      // Add parent directory entry (except for root)
+      if (currentPath !== "/") {
+        const parentRow = document.createElement("tr");
+        parentRow.onclick = () => navigateToParent();
+        
+        parentRow.innerHTML = `
+          <td><i class="fas fa-level-up-alt"></i> ..</td>
+          <td>Directory</td>
+          <td>--</td>
+          <td>--</td>
+        `;
+        fileList.appendChild(parentRow);
+      }
 
       data.files.forEach((file) => {
         const row = document.createElement("tr");
-
-        const nameCell = document.createElement("td");
-        nameCell.textContent = file.name;
-        if (file.is_dir) {
-          nameCell.innerHTML = `<i class="fas fa-folder"></i> ${file.name}`;
-        }
-
-        const sizeCell = document.createElement("td");
-        sizeCell.textContent = file.is_dir ? "--" : formatFileSize(file.size);
-
-        const actionCell = document.createElement("td");
-        if (!file.is_dir) {
-          actionCell.innerHTML = `
-              <button class="action-button download-btn" onclick="downloadFile('${file.name}')">
-                <i class="fas fa-download"></i> Download
-              </button>
-              <button class="action-button delete-btn" onclick="deleteFile('${file.name}')">
-                <i class="fas fa-trash"></i> Delete
-              </button>
-            `;
-        }
-
-        row.appendChild(nameCell);
-        row.appendChild(sizeCell);
-        row.appendChild(actionCell);
+        row.onclick = () => handleFileClick(file);
+        
+        row.innerHTML = `
+          <td><i class="fas ${file.type === 'directory' ? 'fa-folder' : 'fa-file'}"></i> ${file.name}</td>
+          <td>${file.type === 'directory' ? "Directory" : "File"}</td>
+          <td>${file.type === 'directory' ? "--" : formatFileSize(file.size)}</td>
+          <td>${file.modified}</td>
+        `;
         fileList.appendChild(row);
       });
     })
@@ -152,3 +153,36 @@ function deleteAllFiles() {
 document
   .getElementById("tab-files-btn")
   .addEventListener("click", refreshFiles);
+
+  
+function handleFileClick(file) {
+    if (file.type === 'directory') {
+      refreshFiles(file.path === "/sdcard" ? "/" : file.path.replace("/sdcard", ""));
+    } else {
+      downloadFile(file.path === "/sdcard" ? "/" : file.path.replace("/sdcard", ""));
+    }
+}
+  
+function navigateToParent() {
+    const pathParts = currentPath.split('/').filter(Boolean);
+    pathParts.pop(); // Remove last part
+    const parentPath = pathParts.length ? `/${pathParts.join('/')}` : "/";
+    refreshFiles(parentPath);
+}
+  
+function downloadFile(filePath) {
+    window.open(`/download_file?path=${encodeURIComponent(filePath)}`, "_blank");
+}
+  
+function formatFileSize(bytes) {
+    if (bytes === 0) return "0 Bytes";
+    const k = 1024;
+    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2) + " " + sizes[i]);
+}
+  
+  // Initialize file manager when Files tab is opened
+document.getElementById("tab-files-btn").addEventListener("click", () => {
+    refreshFiles(currentPath);
+});

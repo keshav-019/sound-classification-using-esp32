@@ -20,7 +20,7 @@ limitations under the License.
 #include "tensorflow/lite/schema/schema_generated.h"
 
 #include "main_functions.h"
-#include "model.hpp"
+#include "model.h"
 #include "constants.h"
 #include "output_handler.h"
 

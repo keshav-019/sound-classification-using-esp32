@@ -21,42 +21,12 @@
 #include "esp_spiffs.h"
 #include "esp_http_server.h"
 #include "i2s_recorder_main.h"
+#include "file_server.h"
 #include "esp_vfs_fat.h"
-
-#define FILE_PATH_MAX (ESP_VFS_PATH_MAX + CONFIG_SPIFFS_OBJ_NAME_LEN)
-#define MAX_FILE_SIZE (200*1024) // 200 KB
-#define MAX_FILE_SIZE_STR "200KB"
-#define SCRATCH_BUFSIZE 8192
-#define SD_MOUNT_POINT "/sdcard"
-#define MAX_FILES 50
-#define LIST_BUFFER_SIZE 4096
-#define MAX_PATH_LENGTH 512
+#include "file_operations.h"
+#include "esp_timer.h"
 
 static const char *TAG = "file_server";
-
-struct file_server_data {
-    char base_path[ESP_VFS_PATH_MAX + 1];
-    char scratch[SCRATCH_BUFSIZE];
-};
-
-typedef struct {
-    char name[256];
-    int is_dir;
-    size_t size;
-} file_info_t;
-
-/* Forward declarations */
-static const char* get_path_from_uri(char *dest, const char *base_path, const char *uri, size_t destsize);
-static esp_err_t set_content_type_from_file(httpd_req_t *req, const char *filename);
-static esp_err_t upload_post_handler(httpd_req_t *req);
-static esp_err_t delete_post_handler(httpd_req_t *req);
-
-static void httpd_close_func(httpd_handle_t hd, int sockfd)
-{
-    shutdown(sockfd, SHUT_RDWR);
-    close(sockfd);
-    ESP_LOGD(TAG, "Forcefully closed socket %d", sockfd);
-}
 
 static const char* get_path_from_uri(char *dest, const char *base_path, const char *uri, size_t destsize)
 {
@@ -96,7 +66,28 @@ static esp_err_t set_content_type_from_file(httpd_req_t *req, const char *filena
     return httpd_resp_set_type(req, "text/plain");
 }
 
-static esp_err_t start_recording_handler(httpd_req_t *req) {
+static void httpd_close_func(httpd_handle_t hd, int sockfd)
+{
+    shutdown(sockfd, SHUT_RDWR);
+    close(sockfd);
+    ESP_LOGD(TAG, "Forcefully closed socket %d", sockfd);
+}
+
+// Timer callback at file scope
+static void recording_timer_callback(void* arg) {
+    bool* recording_flag = (bool*)arg;
+    *recording_flag = false;
+}
+
+// Update the start_recording_handler function
+esp_err_t start_recording_handler(httpd_req_t *req) {
+    static bool is_recording = false;
+    
+    if (is_recording) {
+        httpd_resp_send_custom_err(req, HTTPD_400, "Recording already in progress");
+        return ESP_FAIL;
+    }
+
     char query[64];
     if (httpd_req_get_url_query_str(req, query, sizeof(query)) != ESP_OK) {
         httpd_resp_send_custom_err(req, HTTPD_400, "Query required");
@@ -115,6 +106,7 @@ static esp_err_t start_recording_handler(httpd_req_t *req) {
         return ESP_FAIL;
     }
 
+    is_recording = true;
     xTaskCreate(
         (TaskFunction_t)start_recording,
         "rec_task",
@@ -124,77 +116,78 @@ static esp_err_t start_recording_handler(httpd_req_t *req) {
         NULL
     );
 
+    // Timer setup
+    const esp_timer_create_args_t timer_args = {
+        .callback = &recording_timer_callback,
+        .arg = &is_recording,
+        .name = "recording_timer"
+    };
+    
+    esp_timer_handle_t timer;
+    ESP_ERROR_CHECK(esp_timer_create(&timer_args, &timer));
+    ESP_ERROR_CHECK(esp_timer_start_once(timer, CONFIG_EXAMPLE_REC_TIME * 1000000 + 1000000));
+
     httpd_resp_send(req, "Recording started", HTTPD_RESP_USE_STRLEN);
     return ESP_OK;
 }
 
-static esp_err_t list_files_handler(httpd_req_t *req) {
-   mount_sdcard();
+esp_err_t list_files_handler(httpd_req_t *req) {
+    char path[256];
+    snprintf(path, sizeof(path), "%s", SD_MOUNT_POINT); // Start with mount point
 
-   // First check if directory exists
-   struct stat st;
-   if (stat(SD_MOUNT_POINT, &st) != 0 || !S_ISDIR(st.st_mode)) {
-       ESP_LOGE(TAG, "Directory %s does not exist or is not accessible", SD_MOUNT_POINT);
-       httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "SD card not mounted");
-       return ESP_FAIL;
-   }
+    size_t query_len = httpd_req_get_url_query_len(req);
+    if (query_len > 0) {
+        char* query = malloc(query_len + 1);
+        if (!query) {
+            return ESP_ERR_NO_MEM;
+        }
 
-   DIR *dir = opendir(SD_MOUNT_POINT);
-   if (!dir) {
-       ESP_LOGE(TAG, "Failed to open directory %s: %s", SD_MOUNT_POINT, strerror(errno));
-       httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Failed to open directory");
-       return ESP_FAIL;
-   }
+        if (httpd_req_get_url_query_str(req, query, query_len + 1) == ESP_OK) {
+            char param[128];
+            if (httpd_query_key_value(query, "path", param, sizeof(param)) == ESP_OK) {
+                // Sanitize and append path
+                if (param[0] == '/') {
+                    snprintf(path, sizeof(path), "%s%s", SD_MOUNT_POINT, param);
+                } else {
+                    snprintf(path, sizeof(path), "%s/%s", SD_MOUNT_POINT, param);
+                }
+            }
+        }
+        free(query);
+    }
 
-   char *json_response = malloc(LIST_BUFFER_SIZE);
-   if (!json_response) {
-       closedir(dir);
-       ESP_LOGE(TAG, "Failed to allocate memory for JSON response");
-       return ESP_ERR_NO_MEM;
-   }
-   
-   strcpy(json_response, "{\"files\":[");
+    // Security checks
+    if (strstr(path, "../") || strstr(path, "..\\")) {
+        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Invalid path");
+        return ESP_FAIL;
+    }
 
-   int file_count = 0;
-   struct dirent *entry;
-   while ((entry = readdir(dir)) != NULL && file_count < MAX_FILES) {
-       if (entry->d_type == DT_REG || entry->d_type == DT_DIR) {
-           char full_path[MAX_PATH_LENGTH];
-           snprintf(full_path, sizeof(full_path), "%s/%s", SD_MOUNT_POINT, entry->d_name);
+    // Ensure proper path termination
+    if (strlen(path) > 1 && path[strlen(path)-1] == '/') {
+        path[strlen(path)-1] = '\0';
+    }
 
-           if (stat(full_path, &st) != 0) {
-               continue;  // Skip if we can't stat the file
-           }
-           
-           if (file_count > 0) {
-               strcat(json_response, ",");
-           }
-           
-           int written = snprintf(json_response + strlen(json_response), 
-                                LIST_BUFFER_SIZE - strlen(json_response),
-                                "{\"name\":\"%s\",\"is_dir\":%d,\"size\":%d}",
-                                entry->d_name,
-                                entry->d_type == DT_DIR,
-                                (int)st.st_size);
-           
-           if (written < 0 || written >= (LIST_BUFFER_SIZE - strlen(json_response))) {
-               break;  // Buffer full
-           }
-           
-           file_count++;
-       }
-   }
-   closedir(dir);
-   
-   strcat(json_response, "]}");
-   httpd_resp_set_type(req, "application/json");
-   esp_err_t ret = httpd_resp_send(req, json_response, strlen(json_response));
-   free(json_response);
-   
-   return ret;
+    // Verify directory exists
+    struct stat st;
+    if (stat(path, &st) != 0 || !S_ISDIR(st.st_mode)) {
+        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "Directory not found");
+        return ESP_FAIL;
+    }
+
+    // Generate and send response
+    char *json_response = list_files_json(path);
+    if (!json_response) {
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Failed to generate listing");
+        return ESP_FAIL;
+    }
+
+    httpd_resp_set_type(req, "application/json");
+    esp_err_t ret = httpd_resp_send(req, json_response, strlen(json_response));
+    free(json_response);
+    return ret;
 }
 
-static esp_err_t delete_file_handler(httpd_req_t *req) {
+esp_err_t delete_file_handler(httpd_req_t *req) {
     char filepath[MAX_PATH_LENGTH];
     char decoded_path[MAX_PATH_LENGTH];
     
@@ -219,7 +212,7 @@ static esp_err_t delete_file_handler(httpd_req_t *req) {
     return ESP_OK;
 }
 
-static esp_err_t download_file_handler(httpd_req_t *req) {
+esp_err_t download_file_handler(httpd_req_t *req) {
     char filepath[MAX_PATH_LENGTH];
     char decoded_path[MAX_PATH_LENGTH];
     
@@ -269,7 +262,7 @@ static esp_err_t download_file_handler(httpd_req_t *req) {
     return ESP_OK;
 }
 
-static esp_err_t script_js_handler(httpd_req_t *req)
+esp_err_t script_js_handler(httpd_req_t *req)
 {
     extern const unsigned char script_js_start[] asm("_binary_script_js_start");
     extern const unsigned char script_js_end[] asm("_binary_script_js_end");
@@ -278,7 +271,7 @@ static esp_err_t script_js_handler(httpd_req_t *req)
     return httpd_resp_send(req, (const char *)script_js_start, script_js_end - script_js_start);
 }
 
-static esp_err_t style_css_get_handler(httpd_req_t *req)
+esp_err_t style_css_get_handler(httpd_req_t *req)
 {
     extern const unsigned char style_css_start[] asm("_binary_style_css_start");
     extern const unsigned char style_css_end[] asm("_binary_style_css_end");
@@ -287,7 +280,7 @@ static esp_err_t style_css_get_handler(httpd_req_t *req)
     return httpd_resp_send(req, (const char *)style_css_start, style_css_end - style_css_start);
 }
 
-static esp_err_t favicon_get_handler(httpd_req_t *req)
+esp_err_t favicon_get_handler(httpd_req_t *req)
 {
     extern const unsigned char favicon_ico_start[] asm("_binary_favicon_ico_start");
     extern const unsigned char favicon_ico_end[] asm("_binary_favicon_ico_end");
@@ -296,7 +289,7 @@ static esp_err_t favicon_get_handler(httpd_req_t *req)
     return httpd_resp_send(req, (const char *)favicon_ico_start, favicon_ico_end - favicon_ico_start);
 }
 
-static esp_err_t send_index_html(httpd_req_t *req)
+esp_err_t send_index_html(httpd_req_t *req)
 {
     extern const unsigned char index_start[] asm("_binary_index_html_start");
     extern const unsigned char index_end[] asm("_binary_index_html_end");
@@ -311,28 +304,7 @@ static esp_err_t send_index_html(httpd_req_t *req)
     return ret;
 }
 
-static esp_err_t upload_post_handler(httpd_req_t *req)
-{
-    struct file_server_data *server_data = req->user_ctx;
-    char filepath[FILE_PATH_MAX];
-    
-    const char *filename = get_path_from_uri(filepath, server_data->base_path,
-                                           req->uri + sizeof("/upload") - 1, sizeof(filepath));
-    if (!filename) {
-        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Filename too long");
-        return ESP_FAIL;
-    }
-
-    /* File upload implementation here */
-    /* ... */
-
-    httpd_resp_set_status(req, "303 See Other");
-    httpd_resp_set_hdr(req, "Location", "/");
-    httpd_resp_set_hdr(req, "Connection", "close");
-    return httpd_resp_sendstr(req, "File uploaded successfully");
-}
-
-static esp_err_t delete_post_handler(httpd_req_t *req)
+esp_err_t delete_post_handler(httpd_req_t *req)
 {
     struct file_server_data *server_data = req->user_ctx;
     char filepath[FILE_PATH_MAX];
@@ -345,6 +317,7 @@ static esp_err_t delete_post_handler(httpd_req_t *req)
     }
 
     /* File deletion implementation here */
+    delete_path(filename);
     /* ... */
 
     httpd_resp_set_status(req, "303 See Other");
@@ -353,7 +326,7 @@ static esp_err_t delete_post_handler(httpd_req_t *req)
     return httpd_resp_sendstr(req, "File deleted successfully");
 }
 
-static esp_err_t download_get_handler(httpd_req_t *req)
+esp_err_t download_get_handler(httpd_req_t *req)
 {
     struct file_server_data *server_data = req->user_ctx;
     char filepath[FILE_PATH_MAX];
@@ -433,7 +406,6 @@ esp_err_t start_file_server(const char *base_path)
         {.uri = "/style.css", .method = HTTP_GET, .handler = style_css_get_handler, .user_ctx = server_data},
         {.uri = "/script.js", .method = HTTP_GET, .handler = script_js_handler, .user_ctx = server_data},
         {.uri = "/favicon.ico", .method = HTTP_GET, .handler = favicon_get_handler, .user_ctx = server_data},
-        {.uri = "/upload/*", .method = HTTP_POST, .handler = upload_post_handler, .user_ctx = server_data},
         {.uri = "/delete/*", .method = HTTP_POST, .handler = delete_post_handler, .user_ctx = server_data},
         {.uri = "/start_recording*", .method = HTTP_GET, .handler = start_recording_handler, .user_ctx = server_data},
         {.uri = "/list_files", .method = HTTP_GET, .handler = list_files_handler, .user_ctx = NULL},

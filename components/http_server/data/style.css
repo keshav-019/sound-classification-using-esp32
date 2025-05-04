@@ -172,7 +172,7 @@ select {
     width: 0%;
     height: 100%;
     background: #00c853;
-    transition: width 0.15s linear;
+    transition: width 0.05s linear;
 }
 
 /* Add to your CSS */
@@ -234,4 +234,52 @@ select {
 
 .delete-btn {
     background: #d32f2f;
+}
+
+/* Add these to your existing CSS */
+.file-path {
+    padding: 10px;
+    background: #333;
+    color: #7cd6ff;
+    font-family: monospace;
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+  
+.file-manager {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+  
+.file-list-container {
+    flex: 1;
+    overflow-y: auto;
+    background: #333;
+    border-radius: 8px;
+}
+  
+#fileList {
+    width: 100%;
+    border-collapse: collapse;
+}
+  
+#fileList th, #fileList td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #444;
+    cursor: pointer;
+}
+  
+#fileList tr:hover {
+    background: #383838;
+}
+  
+.fa-folder {
+    color: #ffb74d;
+}
+  
+.fa-file {
+    color: #90caf9;
 }

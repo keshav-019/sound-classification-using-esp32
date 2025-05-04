@@ -1,9 +1,3 @@
-/*
- * SPDX-FileCopyrightText: 2021-2022 Espressif Systems (Shanghai) CO LTD
- *
- * SPDX-License-Identifier: Unlicense OR CC0-1.0
- */
-
 /* I2S Digital Microphone Recording Example */
 #include <stdio.h>
 #include <string.h>
@@ -23,13 +17,39 @@
 #include "sdmmc_cmd.h"
 #include "format_wav.h"
 #include <string.h>
+#include "esp_dsp.h"
+#include "dsp_common.h"
+#include "dsps_fft2r.h"
+#include "dsps_dct.h"
+// MFCC configuration
+#define N_FFT 8192
+#define N_MEL_BANKS 13
+#define N_MFCC 10
+#define SAMPLE_RATE CONFIG_EXAMPLE_SAMPLE_RATE
+#define SD_MOUNT_POINT "/sdcard"
 
-#define SD_MOUNT_POINT                  "/sdcard"
+typedef struct {
+    float* mel_fb;
+    float* dct_matrix;
+    float* window;
+    float* fft_input;
+    float* power_spectrum;
+    float* mel_energies;
+    int n_fft;
+    int n_mels;
+    int n_mfcc;
+} mfcc_processor_t;
 
+// Add these declarations
+extern sdmmc_host_t host;
+extern sdmmc_card_t *card;
+extern bool sd_card_mounted;
+
+void setup_mfcc(mfcc_processor_t* mfcc_processor);
+void create_mel_filterbank(float* mel_fb, int n_fft, int n_mels, int sample_rate);
+void apply_mel_filterbank(float* power_spectrum, float* mel_fb, float* mel_energies, int n_fft, int n_mels);
 void mount_sdcard(void);
-
 void record_wav(uint32_t rec_time, const char* category_name);
-
 void init_microphone(void);
-
 void start_recording(const char* category_name);
+void unmount_sdcard(void);

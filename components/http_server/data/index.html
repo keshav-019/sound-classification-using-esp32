@@ -7,7 +7,7 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔊</text></svg>">
   <link rel="stylesheet" href="/style.css" />
   <script defer src="/script.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/> -->
 </head>
 <body>
   <div class="wrapper">
@@ -17,19 +17,19 @@
       <button id="tab-record-btn" class="active"><i class="fas fa-microphone"></i> Record</button>
       <button id="tab-predict-btn"><i class="fas fa-brain"></i> Predict</button>
       <button id="tab-ota-btn"><i class="fas fa-upload"></i> OTA Update</button>
-      <button id="tab-files-btn"><i class="fas fa-folder-open"></i> Files</button>
+      <!-- <button id="tab-files-btn"><i class="fas fa-folder-open"></i> Files</button> -->
     </div>
 
     <div id="tab-record" class="action-area active">
       <select id="categorySelect">
         <option value="rooster">Rooster</option>
         <option value="alarm">Alarm</option>
-        <option value="crying_baby">Crying Baby</option>
+        <option value="crying">Crying Baby</option>
         <option value="rain">Rain</option>
         <option value="bell">Bell</option>
         <option value="dog">Dog</option>
       </select>
-      <button onclick="startRecording()"><i class="fas fa-circle"></i> Start Recording (15s)</button>
+      <button onclick="startRecording()"><i class="fas fa-circle"></i> Start Recording (5s)</button>
       <button onclick="stopRecording()"><i class="fas fa-stop"></i> Stop Recording</button>
       <div id="recordProgressBar">
         <div id="recordProgress"></div>
@@ -52,26 +52,24 @@
       <p id="otaStatus"></p>
     </div>
 
-    <div id="tab-files" class="action-area">
+    <!-- <div id="tab-files" class="action-area">
       <div class="file-manager">
-        <div class="file-actions">
-          <button onclick="refreshFiles()"><i class="fas fa-sync-alt"></i> Refresh</button>
-          <button onclick="deleteAllFiles()" class="danger"><i class="fas fa-trash"></i> Delete All</button>
-        </div>
+        <div class="file-path" id="currentPath">/</div>
         <div class="file-list-container">
           <table id="fileList">
             <thead>
               <tr>
                 <th>Name</th>
+                <th>Type</th>
                 <th>Size</th>
-                <th>Actions</th>
+                <th>Modified</th>
               </tr>
             </thead>
             <tbody></tbody>
           </table>
         </div>
       </div>
-    </div>
+    </div> -->
   </div>
 </body>
 </html>

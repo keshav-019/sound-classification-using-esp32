@@ -23,7 +23,7 @@ limitations under the License.
 #include "command_responder.h"
 #include "feature_provider.h"
 #include "micro_model_settings.h"
-#include "model.hpp"
+#include "model.h"
 #include "recognize_commands.h"
 #include "tensorflow/lite/micro/system_setup.h"
 #include "tensorflow/lite/schema/schema_generated.h"

@@ -2,7 +2,7 @@ menu "HTTP file_serving example menu"
 
     config EXAMPLE_MOUNT_SD_CARD
         bool "Use SD card for file storage"
-        default n
+        default "/sdcard"
         help
             If this config item is set, the file you upload to server can be chosen to save in the SDcard.
 
@@ -20,18 +20,6 @@ menu "HTTP file_serving example menu"
         help
             If this config item is set, SDMMC is used to mount the SDcard.
             Otherwise, will use SPI host to access and mount the SDcard.
-
-    config EXAMPLE_WIFI_SSID
-        string "Example Wifi SSID"
-        default "Keshav Wifi"
-        help
-            If this Wifi SSID is set, then it logs in the WIFI SSID on it.
-
-    config EXAMPLE_WIFI_PASSWORD
-        string "Example Password"
-        default "obcd1234"
-        help
-            If this Password is set, then it will connect on that Password only
     menu "SD card pin configuration (SPI)"
         depends on EXAMPLE_MOUNT_SD_CARD && !EXAMPLE_USE_SDMMC_HOST
 

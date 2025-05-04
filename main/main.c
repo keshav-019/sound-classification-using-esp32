@@ -18,16 +18,42 @@
 #include "esp_err.h"
 #include "nvs_flash.h"
 #include "protocol_examples_common.h"
+#include "i2s_recorder_main.h"
 #include "file_server.h"
 #include "model_predictor.h"
 #include "soft_access_point.h"
+#include <stdio.h>
+#include <string.h>
+#include <math.h>
+#include <sys/unistd.h>
+#include <sys/stat.h>
+#include "sdkconfig.h"
+#include "esp_log.h"
+#include "esp_err.h"
+#include "esp_system.h"
+#include "esp_vfs_fat.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "driver/i2s_pdm.h"
+#include "driver/gpio.h"
+#include "driver/spi_common.h"
+#include "sdmmc_cmd.h"
+#include "format_wav.h"
+
+// custom library addition
+#include <stdlib.h>
+#include "driver/spi_master.h"
+#include "soc/gpio_struct.h"
+#include "soc/uart_struct.h"
+#include "esp_dsp.h"
+#include "file_operations.h"
 
 /* This example demonstrates how to create file server
  * using esp_http_server. This file has only startup code.
  * Look in file_server.c for the implementation.
  */
 
-static const char *TAG = "example";
+static const char *TAG = "main_function";
 
 void app_main(void)
 {
@@ -42,6 +68,8 @@ void app_main(void)
     // 3. Initialize WiFi in AP mode
     soft_access_create(); // Now properly modified
     
+    list_files("/sdcard");
+    
     // 4. Mount storage
     const char* base_path = "/data";
     ESP_ERROR_CHECK(mount_storage(base_path));
@@ -49,8 +77,9 @@ void app_main(void)
     // 5. Start web server
     ESP_ERROR_CHECK(start_file_server(base_path));
     ESP_LOGI(TAG, "File server started at http://192.168.4.1");
+
     
     // Your prediction code (if needed)
-    const float input_data[15] = {13.6, 18.2, 11.3, 14.5, 17.8, 19.0, 21.3, 23.4, 21.7, 16.5, 19.7, 28.3, 24.2, 20.7, 9.3};
-    ESP_LOGI(TAG, "The value predicted is: %d", predict_class(input_data));
+    // const float input_data[15] = {13.6, 18.2, 11.3, 14.5, 17.8, 19.0, 21.3, 23.4, 21.7, 16.5, 19.7, 28.3, 24.2, 20.7, 9.3};
+    // ESP_LOGI(TAG, "The value predicted is: %d", predict_class(input_data));
 }

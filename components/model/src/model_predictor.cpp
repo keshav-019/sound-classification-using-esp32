@@ -44,63 +44,56 @@ static uint8_t tensor_arena[TENSOR_ARENA_SIZE];        ///< Memory arena for ten
 extern "C" int predict_class(const float* input_data) {
     static bool initialized = false;
 
-    // One-time initialization block
     if (!initialized) {
-        // Step 1: Load the model from embedded array
-        const tflite::Model* model = tflite::GetModel(mfcc_model_tflite);
+        // Step 1: Load the model
+        const tflite::Model* model = tflite::GetModel(model_tflite);
         if (model == nullptr || model->subgraphs() == nullptr) {
             printf("Invalid model!\n");
             return -1;
         }
 
-        // Step 2: Register operations needed by the model
-        static tflite::MicroMutableOpResolver<6> resolver;
-        resolver.AddConv2D();          // Required for convolutional layers
-        resolver.AddMaxPool2D();       // Required for pooling layers
-        resolver.AddRelu();            // Required for ReLU activation
-        resolver.AddSoftmax();         // Required for output layer
-        resolver.AddFullyConnected();   // Required for dense layers
-        resolver.AddReshape();          // Required for tensor reshaping
-        resolver.AddQuantize();         // Required if using quantized models
-        resolver.AddDequantize();       // Required if using quantized models
+        // Step 2: Register operations - REMOVED AddFlatten()
+        static tflite::MicroMutableOpResolver<7> resolver;  // Reduced from 8 to 7
+        resolver.AddConv2D();
+        resolver.AddDepthwiseConv2D();  // For depthwise separable conv
+        resolver.AddMaxPool2D();
+        resolver.AddRelu();
+        resolver.AddSoftmax();
+        resolver.AddFullyConnected();
+        resolver.AddReshape();         // Flatten operations are often converted to Reshape
+        // Keep Quantize/Dequantize if using quantized model
 
-        // Step 3: Initialize interpreter with model and resolver
+        // Rest of the initialization remains the same
         static tflite::MicroInterpreter static_interpreter(
-            model,              // The loaded model
-            resolver,           // Operation resolver
-            tensor_arena,       // Pre-allocated memory buffer
-            TENSOR_ARENA_SIZE   // Size of memory buffer
+            model,
+            resolver,
+            tensor_arena,
+            TENSOR_ARENA_SIZE
         );
 
         interpreter = &static_interpreter;
 
-        // Step 4: Allocate tensors in the memory arena
         if (interpreter->AllocateTensors() != kTfLiteOk) {
             printf("Failed to allocate tensors!\n");
             return -1;
         }
 
-        // Cache pointers to input and output tensors
         input = interpreter->input(0);
         output = interpreter->output(0);
         initialized = true;
-        
         printf("Model initialized successfully\n");
     }
 
-    // Step 5: Copy input data to model tensor
-    // Note: Assumes input tensor is float32 type with size INPUT_SIZE
+    // Rest of the function remains unchanged
     for (int i = 0; i < INPUT_SIZE; ++i) {
         input->data.f[i] = input_data[i];
     }
 
-    // Step 6: Run inference
     if (interpreter->Invoke() != kTfLiteOk) {
         printf("Model invoke failed!\n");
         return -1;
     }
 
-    // Step 7: Process output - find class with highest probability
     int max_index = 0;
     float max_value = output->data.f[0];
     for (int i = 1; i < OUTPUT_SIZE; ++i) {

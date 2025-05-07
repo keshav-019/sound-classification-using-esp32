@@ -661,73 +661,39 @@ esp_err_t download_get_handler(httpd_req_t *req)
  * @see predict_class() for model inference implementation
  */
 static esp_err_t prediction_handler(httpd_req_t *req) {
-    // Initialize microphone if not already done
-    static bool mic_initialized = false;
-    if (!mic_initialized) {
-        init_microphone();
-        mic_initialized = true;
-    }
+    // 1. Initialize response
+    httpd_resp_set_type(req, "application/json");
+    char response[128];
 
-    i2s_chan_handle_t rx_handle = NULL;       ///< I2S microphone handle
-
-    // Class name mapping
-    const char* class_names[] = {
-        "Alarm", 
-        "Bell", 
-        "Crying Baby", 
-        "Noise", 
-        "Rain", 
-        "Rooster"
-    };
-
-    // Record 1024 samples (16-bit mono)
+    // 3. Collect audio
     int16_t audio_buffer[1024];
-    size_t bytes_read;
-    esp_err_t ret = i2s_channel_read(rx_handle, 
-                                    (char *)audio_buffer, 
-                                    sizeof(audio_buffer), 
-                                    &bytes_read, 
-                                    1000); // 1s timeout
-
-    if (ret != ESP_OK || bytes_read != sizeof(audio_buffer)) {
-        ESP_LOGE(TAG, "Failed to read audio samples: %s", esp_err_to_name(ret));
-        const char* error_response = "{\"error\":\"Failed to record audio\"}";
-        httpd_resp_send(req, error_response, strlen(error_response));
-        return ESP_FAIL;
+    if (collect_audio_samples(audio_buffer) != ESP_OK) {
+        snprintf(response, sizeof(response), "{\"error\":\"Audio capture failed\"}");
+        return httpd_resp_send(req, response, strlen(response));
     }
 
-    // Convert int16 samples to float32 for model input
+    // 4. Convert to model input format
     float float_buffer[1024];
     for (int i = 0; i < 1024; i++) {
-        float_buffer[i] = (float)audio_buffer[i] / 32768.0f; // Normalize to [-1, 1]
+        float_buffer[i] = (float)audio_buffer[i] / 32768.0f; // Normalize
     }
 
-    // Get prediction
+    // 5. Get prediction
     int predicted_class = predict_class(float_buffer);
+    const char* class_names[] = {"Alarm", "Bell", "Crying Baby", "Noise", "Rain", "Rooster"};
+    
     if (predicted_class < 0 || predicted_class > 5) {
-        ESP_LOGE(TAG, "Invalid prediction result: %d", predicted_class);
-        const char* error_response = "{\"error\":\"Invalid prediction result\"}";
-        httpd_resp_send(req, error_response, strlen(error_response));
-        return ESP_FAIL;
+        ESP_LOGE(TAG, "Invalid prediction: %d", predicted_class);
+        snprintf(response, sizeof(response), "{\"error\":\"Model failure\"}");
+        return httpd_resp_send(req, response, strlen(response));
     }
 
-    // Log prediction result
-    ESP_LOGI(TAG, "Predicted class: %d - %s", predicted_class, class_names[predicted_class]);
-
-    // Prepare JSON response
-    char response[128];
+    ESP_LOGI(TAG, "Predicted: %s", class_names[predicted_class]);
     snprintf(response, sizeof(response), 
              "{\"category\":\"%s\"}", 
              class_names[predicted_class]);
-
-    // Send HTTP response
-    httpd_resp_set_type(req, "application/json");
-    ret = httpd_resp_send(req, response, strlen(response));
-    if (ret != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to send HTTP response: %s", esp_err_to_name(ret));
-    }
-
-    return ret;
+    
+    return httpd_resp_send(req, response, strlen(response));
 }
 
 /**

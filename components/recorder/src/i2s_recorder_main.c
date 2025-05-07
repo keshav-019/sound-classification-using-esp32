@@ -340,6 +340,54 @@ void init_microphone(void) {
 }
 
 /**
+ * @brief Collects 1024 audio samples from I2S microphone
+ * @param audio_buffer Output buffer for 16-bit PCM samples (must be 1024 elements)
+ * @return ESP_OK on success, error code on failure
+ * 
+ * @note This function:
+ * - Requires initialized I2S microphone
+ * - Blocks for ~64ms (at 16kHz sampling rate)
+ * - Automatically retries once on read failure
+ */
+esp_err_t collect_audio_samples(int16_t *audio_buffer) {
+    if (audio_buffer == NULL) {
+        ESP_LOGE(TAG, "Invalid audio buffer");
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    size_t bytes_read;
+    esp_err_t ret;
+
+    if (rx_handle == NULL) {
+        init_microphone(); // Make sure this sets rx_handle properly
+        // Add error check
+        if (rx_handle == NULL) {
+            ESP_LOGE(TAG, "Microphone initialization failed!");
+            return ESP_FAIL;
+        }
+    }
+    
+    // Try reading with 1s timeout (may need multiple attempts)
+    for (int attempt = 0; attempt < 2; attempt++) {
+        ret = i2s_channel_read(rx_handle, 
+                              (char *)audio_buffer, 
+                              1024 * sizeof(int16_t),
+                              &bytes_read, 
+                              1000 / portTICK_PERIOD_MS);
+        
+        if (ret == ESP_OK && bytes_read == 1024 * sizeof(int16_t)) {
+            return ESP_OK;
+        }
+        
+        ESP_LOGW(TAG, "Audio read attempt %d failed: %s (bytes: %d)", 
+                attempt, esp_err_to_name(ret), bytes_read);
+    }
+
+    ESP_LOGE(TAG, "Failed to collect 1024 samples");
+    return ESP_FAIL;
+}
+
+/**
 * @brief Main recording task
 * @param category_name Audio category name for storage
 * 

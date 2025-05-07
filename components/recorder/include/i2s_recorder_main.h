@@ -62,3 +62,4 @@ void record_wav(uint32_t rec_time, const char* category_name);
 void init_microphone(void);
 void start_recording(const char* category_name);
 void unmount_sdcard(void);
+esp_err_t collect_audio_samples(int16_t *audio_buffer);

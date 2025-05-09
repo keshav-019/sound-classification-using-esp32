@@ -6,6 +6,8 @@
 
 This ESP32-based system provides real-time audio classification with baby crying detection capabilities. The device records audio via a PDM microphone, processes the audio using a TensorFlow Lite model, and provides a web interface for control and monitoring.
 
+Dataset: https://drive.google.com/drive/folders/19ARRPbbfbrC-Z9hajiskc-DbI-gGbLxk
+
 ## Key Components
 
 1. **File Operations** - Handles all SD card/filesystem operations including:

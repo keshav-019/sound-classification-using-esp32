@@ -19,7 +19,7 @@ static const char *TAG = "pdm_rec_example";
 #define SPI_DMA_CHAN                    SPI_DMA_CH_AUTO  ///< SPI DMA channel
 #define NUM_CHANNELS                    (1)     ///< Mono audio recording
 #define SD_MOUNT_POINT                  "/sdcard"  ///< SD card mount point
-#define SAMPLE_SIZE                     (CONFIG_EXAMPLE_BIT_SAMPLE * 1024)  ///< Sample buffer size
+// #define SAMPLE_SIZE                     (CONFIG_EXAMPLE_BIT_SAMPLE * 1024)  ///< Sample buffer size
 #define BYTE_RATE                       (CONFIG_EXAMPLE_SAMPLE_RATE * (CONFIG_EXAMPLE_BIT_SAMPLE / 8)) * NUM_CHANNELS  ///< Audio byte rate
 #define CONFIG_EXAMPLE_REC_TIME         5       ///< Default recording duration (seconds)
 
@@ -34,6 +34,8 @@ static const char *TAG = "pdm_rec_example";
 #define NUM_MFCC_COEFFS 13              ///< Number of MFCC coefficients to keep
 #define WAVE_HEADER_SIZE 44             ///< Size of WAV file header
 #define FFT_BIN_SIZE (SAMPLING_RATE / 2) / (frame_size / 2)
+#define NUM_SAMPLES 1024
+#define SAMPLE_SIZE (NUM_SAMPLES * sizeof(int16_t))
 
 // Global variables
 sdmmc_host_t host = SDSPI_HOST_DEFAULT();  ///< SD card host configuration
@@ -55,7 +57,7 @@ static float diff_y[frame_size / 2];  ///< FFT difference buffer
 static float mel_filter_bank[NUM_MEL_BINS][frame_size / 2];  ///< Mel filter bank
 static float mel_spectrum[NUM_MEL_BINS];  ///< Mel spectrum
 static float log_mel_spectrum[NUM_MEL_BINS];  ///< Log Mel spectrum
-static float dct_matrix[NUM_MEL_BINS][NUM_MFCC_COEFFS];  ///< DCT matrix
+// static float dct_matrix[NUM_MEL_BINS][NUM_MFCC_COEFFS];  ///< DCT matrix
 static float mfcc[NUM_MFCC_COEFFS];  ///< MFCC coefficients
 size_t bytes_read;
 
@@ -307,6 +309,175 @@ void record_wav(uint32_t rec_time, const char* category_name) {
     unmount_sdcard();
 }
 
+// MFCC Configuration
+#define FRAME_LENGTH_MS 25
+#define FRAME_SHIFT_MS 10
+#define N_MELS 20
+
+// Derived constants
+#define FRAME_LENGTH (SAMPLE_RATE * FRAME_LENGTH_MS / 1000)
+#define FRAME_SHIFT (SAMPLE_RATE * FRAME_SHIFT_MS / 1000)
+#define PREEMPHASIS_COEFF 0.97f
+
+// Allocate large buffers in external RAM (PSRAM) if available
+#if CONFIG_SPIRAM_USE_MALLOC
+static float *hamming_window = NULL;
+static float *mel_filterbank = NULL;
+static float *dct_matrix = NULL;
+#else
+static float hamming_window[FRAME_LENGTH] = {0};
+static float mel_filterbank[N_MELS][N_FFT/2 + 1] = {0};
+static float dct_matrix[N_MFCC][N_MELS] = {0};
+#endif
+
+// Convert Hz to Mel scale
+static float hz_to_mel(float hz) {
+    return 2595.0f * log10f(1.0f + hz / 700.0f);
+}
+
+// Initialize MFCC processing (call once at startup)
+void init_mfcc() {
+    // Initialize memory for large buffers
+    #if CONFIG_SPIRAM_USE_MALLOC
+    hamming_window = (float*)heap_caps_malloc(FRAME_LENGTH * sizeof(float), MALLOC_CAP_SPIRAM);
+    mel_filterbank = (float*)heap_caps_malloc(N_MELS * (N_FFT/2 + 1) * sizeof(float), MALLOC_CAP_SPIRAM);
+    dct_matrix = (float*)heap_caps_malloc(N_MFCC * N_MELS * sizeof(float), MALLOC_CAP_SPIRAM);
+    
+    if (!hamming_window || !mel_filterbank || !dct_matrix) {
+        ESP_LOGE(TAG, "Failed to allocate MFCC buffers in PSRAM");
+        return;
+    }
+    #endif
+
+    // Initialize Hamming window
+    for (int i = 0; i < FRAME_LENGTH; i++) {
+        hamming_window[i] = 0.54f - 0.46f * cosf(2 * M_PI * i / (FRAME_LENGTH - 1));
+    }
+
+    // Initialize Mel filterbank
+    float mel_min = hz_to_mel(0);
+    float mel_max = hz_to_mel(SAMPLE_RATE / 2);
+    float mel_points[N_MELS + 2];
+    
+    for (int i = 0; i < N_MELS + 2; i++) {
+        mel_points[i] = mel_min + i * (mel_max - mel_min) / (N_MELS + 1);
+    }
+    
+    for (int i = 0; i < N_MELS; i++) {
+        for (int j = 0; j < N_FFT/2 + 1; j++) {
+            float freq = (float)j * SAMPLE_RATE / N_FFT;
+            float mel = hz_to_mel(freq);
+            
+            if (mel < mel_points[i]) {
+                mel_filterbank[i][j] = 0;
+            } else if (mel <= mel_points[i+1]) {
+                mel_filterbank[i][j] = (mel - mel_points[i]) / (mel_points[i+1] - mel_points[i]);
+            } else if (mel <= mel_points[i+2]) {
+                mel_filterbank[i][j] = (mel_points[i+2] - mel) / (mel_points[i+2] - mel_points[i+1]);
+            } else {
+                mel_filterbank[i][j] = 0;
+            }
+        }
+    }
+
+    // Initialize DCT matrix (Type-II DCT with orthogonal normalization)
+    for (int k = 0; k < N_MFCC; k++) {
+        for (int n = 0; n < N_MELS; n++) {
+            dct_matrix[k][n] = sqrtf(2.0f/N_MELS) * cosf(M_PI * k * (2*n + 1) / (2 * N_MELS));
+        }
+    }
+    // Special case for k=0
+    for (int n = 0; n < N_MELS; n++) {
+        dct_matrix[0][n] *= sqrtf(2.0f)/2.0f;
+    }
+}
+
+// Extract MFCC features from audio samples
+void extract_mfcc_features(int16_t* audio_samples, float* mfcc_output) {
+    float frame[FRAME_LENGTH];
+    float fft_buffer[N_FFT] = {0};
+    float power_spectrum[N_FFT/2 + 1];
+    float mel_energies[N_MELS];
+    float mfcc_frame[N_MFCC];
+    
+    int num_frames = (1024 - FRAME_LENGTH) / FRAME_SHIFT + 1;
+    if (num_frames > 1024) num_frames = 1024; // Safety check
+    
+    // Pre-emphasis
+    float prev_sample = audio_samples[0] / 32768.0f;
+    for (int i = 1; i < 1024; i++) {
+        float sample = audio_samples[i] / 32768.0f;
+        audio_samples[i] = (sample - PREEMPHASIS_COEFF * prev_sample) * 32768.0f;
+        prev_sample = sample;
+    }
+
+    // Process each frame
+    for (int frame_idx = 0; frame_idx < num_frames; frame_idx++) {
+        int offset = frame_idx * FRAME_SHIFT;
+        
+        // Apply Hamming window
+        for (int i = 0; i < FRAME_LENGTH; i++) {
+            if (offset + i < 1024) {
+                frame[i] = (audio_samples[offset + i] / 32768.0f) * hamming_window[i];
+            } else {
+                frame[i] = 0; // Zero-pad if needed
+            }
+        }
+
+        // Compute FFT
+        memcpy(fft_buffer, frame, FRAME_LENGTH * sizeof(float));
+        dsps_fft2r_init_fc32(NULL, N_FFT);
+        dsps_fft2r_fc32(fft_buffer, N_FFT);
+        dsps_bit_rev2r_fc32(fft_buffer, N_FFT);
+        
+        // Compute power spectrum
+        for (int i = 0; i < N_FFT/2 + 1; i++) {
+            float real = fft_buffer[i*2];
+            float imag = fft_buffer[i*2 + 1];
+            power_spectrum[i] = (real * real + imag * imag) / N_FFT;
+        }
+
+        // Apply Mel filterbank
+        memset(mel_energies, 0, sizeof(mel_energies));
+        for (int i = 0; i < N_MELS; i++) {
+            for (int j = 0; j < N_FFT/2 + 1; j++) {
+                mel_energies[i] += power_spectrum[j] * mel_filterbank[i][j];
+            }
+            // Log of energy
+            mel_energies[i] = logf(mel_energies[i] + 1e-6f); // Add small offset to avoid log(0)
+        }
+
+        // Compute DCT manually using matrix multiplication
+        for (int k = 0; k < N_MFCC; k++) {
+            mfcc_frame[k] = 0.0f;
+            for (int n = 0; n < N_MELS; n++) {
+                mfcc_frame[k] += mel_energies[n] * dct_matrix[k][n];
+            }
+        }
+        
+        // Copy to output buffer (N_MFCC coefficients per frame)
+        for (int i = 0; i < N_MFCC; i++) {
+            mfcc_output[frame_idx * N_MFCC + i] = mfcc_frame[i];
+        }
+    }
+
+    // If we have fewer than 1024 frames, zero-pad the remaining
+    for (int i = num_frames * N_MFCC; i < 1024 * N_MFCC; i++) {
+        mfcc_output[i] = 0.0f;
+    }
+}
+
+
+// Don't forget to free allocated memory when done
+void deinit_mfcc() {
+    #if CONFIG_SPIRAM_USE_MALLOC
+    if (hamming_window) heap_caps_free(hamming_window);
+    if (mel_filterbank) heap_caps_free(mel_filterbank);
+    if (dct_matrix) heap_caps_free(dct_matrix);
+    #endif
+}
+
+
 /**
 * @brief Initializes PDM microphone
 * 
@@ -317,8 +488,13 @@ void record_wav(uint32_t rec_time, const char* category_name) {
 * - Clock settings
 */
 void init_microphone(void) {
-    // Channel configuration
-    i2s_chan_config_t chan_cfg = I2S_CHANNEL_DEFAULT_CONFIG(I2S_NUM_AUTO, I2S_ROLE_MASTER);
+    // Check if already initialized
+    if (rx_handle != NULL) {
+        return;
+    }
+
+    // Channel configuration - explicitly use I2S_NUM_0
+    i2s_chan_config_t chan_cfg = I2S_CHANNEL_DEFAULT_CONFIG(I2S_NUM_0, I2S_ROLE_MASTER);
     ESP_ERROR_CHECK(i2s_new_channel(&chan_cfg, NULL, &rx_handle));
 
     // PDM receiver configuration
@@ -337,6 +513,49 @@ void init_microphone(void) {
     // Initialize and enable channel
     ESP_ERROR_CHECK(i2s_channel_init_pdm_rx_mode(rx_handle, &pdm_rx_cfg));
     ESP_ERROR_CHECK(i2s_channel_enable(rx_handle));
+}
+
+void deinit_microphone(void) {
+    if (rx_handle) {
+        i2s_channel_disable(rx_handle);
+        i2s_del_channel(rx_handle);
+        rx_handle = NULL;
+    }
+}
+
+// sumanshu code
+void get_audio_samples(int16_t* input_data)
+{
+    assert(input_data != NULL);  // Ensure valid pointer
+    assert((uintptr_t)input_data % 4 == 0);  // Ensure 4-byte alignment
+    
+    // Skip initial garbage samples (more efficient version)
+    const int skip_samples = 625;
+    size_t bytes_read = 0;
+    
+    for(int i=0; i<skip_samples; i++){
+        if(i2s_channel_read(rx_handle, (char *)i2s_readraw_buff, 
+                          SAMPLE_SIZE, &bytes_read, 100) != ESP_OK) {
+            ESP_LOGE(TAG, "I2S read failed during warmup");
+            return;
+        }
+    }
+
+    // Get actual samples
+    esp_err_t ret = i2s_channel_read(rx_handle, (char *)i2s_readraw_buff, 
+                                   SAMPLE_SIZE, &bytes_read, 5000);
+    
+    if (ret == ESP_OK && bytes_read == SAMPLE_SIZE) {
+        // Replace printf with ESP_LOG at most verbose level
+        ESP_LOGV(TAG, "Samples:");
+        for (int i = 0; i < NUM_SAMPLES; i++) {
+            ESP_LOGV(TAG, "%d", i2s_readraw_buff[i]);
+            input_data[i] = i2s_readraw_buff[i];
+        }
+    } else {
+        ESP_LOGE(TAG, "I2S read failed: %d bytes (expected %d)", 
+                bytes_read, SAMPLE_SIZE);
+    }
 }
 
 /**

@@ -28,6 +28,7 @@
 #include "soc/gpio_struct.h"
 #include "soc/uart_struct.h"
 #include "esp_dsp.h"
+#include "dsp_common.h"
 
 
 // MFCC configuration
@@ -63,3 +64,7 @@ void init_microphone(void);
 void start_recording(const char* category_name);
 void unmount_sdcard(void);
 esp_err_t collect_audio_samples(int16_t *audio_buffer);
+void get_audio_samples(int16_t* input_data);
+void extract_mfcc_features(int16_t* audio_samples, float* mfcc_output);
+// Add this to your header file
+void deinit_microphone(void);

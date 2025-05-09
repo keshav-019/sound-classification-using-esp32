@@ -660,39 +660,60 @@ esp_err_t download_get_handler(httpd_req_t *req)
  * @see init_microphone() for I2S configuration
  * @see predict_class() for model inference implementation
  */
+
+// Prediction handler function
 static esp_err_t prediction_handler(httpd_req_t *req) {
-    // 1. Initialize response
     httpd_resp_set_type(req, "application/json");
     char response[128];
+    static const char* CLASS_NAMES[] = {"ALARM", "BELL", "CRYING_BABY", "NOISE", "RAIN", "ROOSTER"};
 
-    // 3. Collect audio
-    int16_t audio_buffer[1024];
-    if (collect_audio_samples(audio_buffer) != ESP_OK) {
-        snprintf(response, sizeof(response), "{\"error\":\"Audio capture failed\"}");
-        return httpd_resp_send(req, response, strlen(response));
+    ESP_LOGI(TAG, "Prediction Handler Called");
+
+    // Initialize microphone if not already done
+    static bool mic_initialized = false;
+    if (!mic_initialized) {
+        init_microphone();
+        mic_initialized = true;
+        
+        // Optional warm-up read to stabilize microphone
+        int16_t discard_buffer[1024];
+        get_audio_samples(discard_buffer);
     }
 
-    // 4. Convert to model input format
-    float float_buffer[1024];
-    for (int i = 0; i < 1024; i++) {
-        float_buffer[i] = (float)audio_buffer[i] / 32768.0f; // Normalize
-    }
-
-    // 5. Get prediction
-    int predicted_class = predict_class(float_buffer);
-    const char* class_names[] = {"Alarm", "Bell", "Crying Baby", "Noise", "Rain", "Rooster"};
+    // Audio processing buffers
+    static int16_t input_data[1024];
+    static float normalized_input[1024];
     
-    if (predicted_class < 0 || predicted_class > 5) {
+    // Get audio samples
+    get_audio_samples(input_data);
+
+    // Normalize audio
+    int16_t min_val = input_data[0];
+    int16_t max_val = input_data[0];
+    for (int i = 1; i < 1024; ++i) {
+        if (input_data[i] < min_val) min_val = input_data[i];
+        if (input_data[i] > max_val) max_val = input_data[i];
+    }
+
+    float range = (float)(max_val - min_val);
+    if (range == 0) range = 1.0f;
+
+    for (int i = 0; i < 1024; ++i) {
+        normalized_input[i] = ((float)(input_data[i]) - min_val) / range;
+    }
+
+    // Run prediction
+    int predicted_class = predict_class(normalized_input);
+    
+    // Format response
+    if (predicted_class >= 0 && predicted_class < 6) {
+        ESP_LOGI(TAG, "Predicted sound: %s", CLASS_NAMES[predicted_class]);
+        snprintf(response, sizeof(response), "{\"category\":\"%s\"}", CLASS_NAMES[predicted_class]);
+    } else {
         ESP_LOGE(TAG, "Invalid prediction: %d", predicted_class);
         snprintf(response, sizeof(response), "{\"error\":\"Model failure\"}");
-        return httpd_resp_send(req, response, strlen(response));
     }
 
-    ESP_LOGI(TAG, "Predicted: %s", class_names[predicted_class]);
-    snprintf(response, sizeof(response), 
-             "{\"category\":\"%s\"}", 
-             class_names[predicted_class]);
-    
     return httpd_resp_send(req, response, strlen(response));
 }
 
@@ -722,6 +743,7 @@ esp_err_t start_file_server(const char *base_path)
     config.lru_purge_enable = true;
     config.max_uri_handlers = 20;
     config.close_fn = httpd_close_func;
+    config.stack_size = 8192;  // Double the default stack size
 
     httpd_handle_t server = NULL;
     if (httpd_start(&server, &config) != ESP_OK) {

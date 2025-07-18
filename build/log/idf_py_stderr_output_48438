@@ -1,0 +1,328 @@
+[0;33m--- esp-idf-monitor 1.6.2 on /dev/ttyACM1 115200[0m
+[0;33m--- Quit: Ctrl+] | Menu: Ctrl+T | Help: Ctrl+T followed by Ctrl+H[0m
+[0;33m--- 0x40048836: uart_tx_one_char_uart in ROM
+[0m
+[0;33m--- 0x40375b92: panic_abort at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/panic.c:463
+--- 0x4037b10d: esp_system_abort at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/port/esp_system_chip.c:92
+--- 0x40382799: __assert_func at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/assert.c:80
+--- 0x4037d256: xTaskRemoveFromEventList at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/tasks.c:3897 (discriminator 1)
+--- 0x4037b9f8: xQueueSemaphoreTake at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/queue.c:1763
+--- 0x4037baaa: xQueueTakeMutexRecursive at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/queue.c:835
+--- 0x40376c4d: lock_acquire_generic at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/locks.c:146
+--- 0x40376d41: _lock_acquire_recursive at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/locks.c:162
+--- 0x40376e0b: __retarget_lock_acquire_recursive at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/locks.c:321
+--- 0x420207fe: _vfprintf_r at /builds/idf/crosstool-NG/.build/xtensa-esp-elf/src/newlib/newlib/libc/stdio/vfprintf.c:846 (discriminator 2)
+--- 0x420199f9: vprintf at /builds/idf/crosstool-NG/.build/xtensa-esp-elf/src/newlib/newlib/libc/stdio/vprintf.c:34
+--- 0x4202d635: esp_log_writev at /home/sumanshu/esp/v5.3.2/esp-idf/components/log/log.c:210
+--- 0x4038250d: esp_log_write at /home/sumanshu/esp/v5.3.2/esp-idf/components/log/log.c:220
+--- 0x42009bc0: mount_sdcard at /home/sumanshu/projects/i2s_recorder/main/i2s_recorder_main.c:154 (discriminator 1)
+--- 0x42009ca3: app_main at /home/sumanshu/projects/i2s_recorder/main/i2s_recorder_main.c:195
+--- 0x4202c8fb: main_task at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/app_startup.c:208
+--- 0x4037bba1: vPortTaskWrapper at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+[0m
+[0;33m--- 0x40375acc: esp_restart_noos at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/port/soc/esp32s3/system_internal.c:158
+[0m
+[0;33m--- 0x40375b92: panic_abort at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/panic.c:463
+--- 0x4037b10d: esp_system_abort at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/port/esp_system_chip.c:92
+--- 0x40382799: __assert_func at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/assert.c:80
+--- 0x4037d256: xTaskRemoveFromEventList at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/tasks.c:3897 (discriminator 1)
+--- 0x4037b9f8: xQueueSemaphoreTake at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/queue.c:1763
+--- 0x4037baaa: xQueueTakeMutexRecursive at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/queue.c:835
+--- 0x40376c4d: lock_acquire_generic at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/locks.c:146
+--- 0x40376d41: _lock_acquire_recursive at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/locks.c:162
+--- 0x40376e0b: __retarget_lock_acquire_recursive at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/locks.c:321
+--- 0x420207fe: _vfprintf_r at /builds/idf/crosstool-NG/.build/xtensa-esp-elf/src/newlib/newlib/libc/stdio/vfprintf.c:846 (discriminator 2)
+--- 0x420199f9: vprintf at /builds/idf/crosstool-NG/.build/xtensa-esp-elf/src/newlib/newlib/libc/stdio/vprintf.c:34
+--- 0x4202d635: esp_log_writev at /home/sumanshu/esp/v5.3.2/esp-idf/components/log/log.c:210
+--- 0x4038250d: esp_log_write at /home/sumanshu/esp/v5.3.2/esp-idf/components/log/log.c:220
+--- 0x42009bc0: mount_sdcard at /home/sumanshu/projects/i2s_recorder/main/i2s_recorder_main.c:154 (discriminator 1)
+--- 0x42009ca3: app_main at /home/sumanshu/projects/i2s_recorder/main/i2s_recorder_main.c:195
+--- 0x4202c8fb: main_task at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/app_startup.c:208
+--- 0x4037bba1: vPortTaskWrapper at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+[0m
+[0;33m--- 0x40375acc: esp_restart_noos at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/port/soc/esp32s3/system_internal.c:158
+[0m
+[0;33m--- 0x40375b92: panic_abort at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/panic.c:463
+--- 0x4037b10d: esp_system_abort at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/port/esp_system_chip.c:92
+--- 0x40382799: __assert_func at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/assert.c:80
+--- 0x4037d256: xTaskRemoveFromEventList at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/tasks.c:3897 (discriminator 1)
+--- 0x4037b9f8: xQueueSemaphoreTake at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/queue.c:1763
+--- 0x4037baaa: xQueueTakeMutexRecursive at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/queue.c:835
+--- 0x40376c4d: lock_acquire_generic at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/locks.c:146
+--- 0x40376d41: _lock_acquire_recursive at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/locks.c:162
+--- 0x40376e0b: __retarget_lock_acquire_recursive at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/locks.c:321
+--- 0x420207fe: _vfprintf_r at /builds/idf/crosstool-NG/.build/xtensa-esp-elf/src/newlib/newlib/libc/stdio/vfprintf.c:846 (discriminator 2)
+--- 0x420199f9: vprintf at /builds/idf/crosstool-NG/.build/xtensa-esp-elf/src/newlib/newlib/libc/stdio/vprintf.c:34
+--- 0x4202d635: esp_log_writev at /home/sumanshu/esp/v5.3.2/esp-idf/components/log/log.c:210
+--- 0x4038250d: esp_log_write at /home/sumanshu/esp/v5.3.2/esp-idf/components/log/log.c:220
+--- 0x42009bc0: mount_sdcard at /home/sumanshu/projects/i2s_recorder/main/i2s_recorder_main.c:154 (discriminator 1)
+--- 0x42009ca3: app_main at /home/sumanshu/projects/i2s_recorder/main/i2s_recorder_main.c:195
+--- 0x4202c8fb: main_task at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/app_startup.c:208
+--- 0x4037bba1: vPortTaskWrapper at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+[0m
+[0;33m--- 0x40375acc: esp_restart_noos at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/port/soc/esp32s3/system_internal.c:158
+[0m
+[0;33m--- 0x40375b92: panic_abort at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/panic.c:463
+--- 0x4037b10d: esp_system_abort at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/port/esp_system_chip.c:92
+--- 0x40382799: __assert_func at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/assert.c:80
+--- 0x4037d256: xTaskRemoveFromEventList at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/tasks.c:3897 (discriminator 1)
+--- 0x4037b9f8: xQueueSemaphoreTake at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/queue.c:1763
+--- 0x4037baaa: xQueueTakeMutexRecursive at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/queue.c:835
+--- 0x40376c4d: lock_acquire_generic at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/locks.c:146
+--- 0x40376d41: _lock_acquire_recursive at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/locks.c:162
+--- 0x40376e0b: __retarget_lock_acquire_recursive at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/locks.c:321
+--- 0x420207fe: _vfprintf_r at /builds/idf/crosstool-NG/.build/xtensa-esp-elf/src/newlib/newlib/libc/stdio/vfprintf.c:846 (discriminator 2)
+--- 0x420199f9: vprintf at /builds/idf/crosstool-NG/.build/xtensa-esp-elf/src/newlib/newlib/libc/stdio/vprintf.c:34
+--- 0x4202d635: esp_log_writev at /home/sumanshu/esp/v5.3.2/esp-idf/components/log/log.c:210
+--- 0x4038250d: esp_log_write at /home/sumanshu/esp/v5.3.2/esp-idf/components/log/log.c:220
+--- 0x42009bc0: mount_sdcard at /home/sumanshu/projects/i2s_recorder/main/i2s_recorder_main.c:154 (discriminator 1)
+--- 0x42009ca3: app_main at /home/sumanshu/projects/i2s_recorder/main/i2s_recorder_main.c:195
+--- 0x4202c8fb: main_task at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/app_startup.c:208
+--- 0x4037bba1: vPortTaskWrapper at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+[0m
+[0;33m--- 0x40375acc: esp_restart_noos at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/port/soc/esp32s3/system_internal.c:158
+[0m
+[0;33m--- 0x40375b92: panic_abort at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/panic.c:463
+--- 0x4037b10d: esp_system_abort at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/port/esp_system_chip.c:92
+--- 0x40382799: __assert_func at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/assert.c:80
+--- 0x4037d256: xTaskRemoveFromEventList at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/tasks.c:3897 (discriminator 1)
+--- 0x4037b9f8: xQueueSemaphoreTake at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/queue.c:1763
+--- 0x4037baaa: xQueueTakeMutexRecursive at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/queue.c:835
+--- 0x40376c4d: lock_acquire_generic at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/locks.c:146
+--- 0x40376d41: _lock_acquire_recursive at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/locks.c:162
+--- 0x40376e0b: __retarget_lock_acquire_recursive at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/locks.c:321
+--- 0x420207fe: _vfprintf_r at /builds/idf/crosstool-NG/.build/xtensa-esp-elf/src/newlib/newlib/libc/stdio/vfprintf.c:846 (discriminator 2)
+--- 0x420199f9: vprintf at /builds/idf/crosstool-NG/.build/xtensa-esp-elf/src/newlib/newlib/libc/stdio/vprintf.c:34
+--- 0x4202d635: esp_log_writev at /home/sumanshu/esp/v5.3.2/esp-idf/components/log/log.c:210
+--- 0x4038250d: esp_log_write at /home/sumanshu/esp/v5.3.2/esp-idf/components/log/log.c:220
+--- 0x42009bc0: mount_sdcard at /home/sumanshu/projects/i2s_recorder/main/i2s_recorder_main.c:154 (discriminator 1)
+--- 0x42009ca3: app_main at /home/sumanshu/projects/i2s_recorder/main/i2s_recorder_main.c:195
+--- 0x4202c8fb: main_task at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/app_startup.c:208
+--- 0x4037bba1: vPortTaskWrapper at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+[0m
+[0;33m--- 0x40375acc: esp_restart_noos at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/port/soc/esp32s3/system_internal.c:158
+[0m
+[0;33m--- 0x40375b92: panic_abort at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/panic.c:463
+--- 0x4037b10d: esp_system_abort at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/port/esp_system_chip.c:92
+--- 0x40382799: __assert_func at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/assert.c:80
+--- 0x4037d256: xTaskRemoveFromEventList at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/tasks.c:3897 (discriminator 1)
+--- 0x4037b9f8: xQueueSemaphoreTake at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/queue.c:1763
+--- 0x4037baaa: xQueueTakeMutexRecursive at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/queue.c:835
+--- 0x40376c4d: lock_acquire_generic at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/locks.c:146
+--- 0x40376d41: _lock_acquire_recursive at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/locks.c:162
+--- 0x40376e0b: __retarget_lock_acquire_recursive at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/locks.c:321
+--- 0x420207fe: _vfprintf_r at /builds/idf/crosstool-NG/.build/xtensa-esp-elf/src/newlib/newlib/libc/stdio/vfprintf.c:846 (discriminator 2)
+--- 0x420199f9: vprintf at /builds/idf/crosstool-NG/.build/xtensa-esp-elf/src/newlib/newlib/libc/stdio/vprintf.c:34
+--- 0x4202d635: esp_log_writev at /home/sumanshu/esp/v5.3.2/esp-idf/components/log/log.c:210
+--- 0x4038250d: esp_log_write at /home/sumanshu/esp/v5.3.2/esp-idf/components/log/log.c:220
+--- 0x42009bc0: mount_sdcard at /home/sumanshu/projects/i2s_recorder/main/i2s_recorder_main.c:154 (discriminator 1)
+--- 0x42009ca3: app_main at /home/sumanshu/projects/i2s_recorder/main/i2s_recorder_main.c:195
+--- 0x4202c8fb: main_task at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/app_startup.c:208
+--- 0x4037bba1: vPortTaskWrapper at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+[0m
+[0;33m--- 0x40375acc: esp_restart_noos at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/port/soc/esp32s3/system_internal.c:158
+[0m
+[0;33m--- 0x40375b92: panic_abort at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/panic.c:463
+--- 0x4037b10d: esp_system_abort at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/port/esp_system_chip.c:92
+--- 0x40382799: __assert_func at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/assert.c:80
+--- 0x4037d256: xTaskRemoveFromEventList at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/tasks.c:3897 (discriminator 1)
+--- 0x4037b9f8: xQueueSemaphoreTake at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/queue.c:1763
+--- 0x4037baaa: xQueueTakeMutexRecursive at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/queue.c:835
+--- 0x40376c4d: lock_acquire_generic at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/locks.c:146
+--- 0x40376d41: _lock_acquire_recursive at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/locks.c:162
+--- 0x40376e0b: __retarget_lock_acquire_recursive at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/locks.c:321
+--- 0x420207fe: _vfprintf_r at /builds/idf/crosstool-NG/.build/xtensa-esp-elf/src/newlib/newlib/libc/stdio/vfprintf.c:846 (discriminator 2)
+--- 0x420199f9: vprintf at /builds/idf/crosstool-NG/.build/xtensa-esp-elf/src/newlib/newlib/libc/stdio/vprintf.c:34
+--- 0x4202d635: esp_log_writev at /home/sumanshu/esp/v5.3.2/esp-idf/components/log/log.c:210
+--- 0x4038250d: esp_log_write at /home/sumanshu/esp/v5.3.2/esp-idf/components/log/log.c:220
+--- 0x42009bc0: mount_sdcard at /home/sumanshu/projects/i2s_recorder/main/i2s_recorder_main.c:154 (discriminator 1)
+--- 0x42009ca3: app_main at /home/sumanshu/projects/i2s_recorder/main/i2s_recorder_main.c:195
+--- 0x4202c8fb: main_task at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/app_startup.c:208
+--- 0x4037bba1: vPortTaskWrapper at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+[0m
+[0;33m--- 0x40375acc: esp_restart_noos at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/port/soc/esp32s3/system_internal.c:158
+[0m
+[0;33m--- 0x40375b92: panic_abort at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/panic.c:463
+--- 0x4037b10d: esp_system_abort at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/port/esp_system_chip.c:92
+--- 0x40382799: __assert_func at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/assert.c:80
+--- 0x4037d256: xTaskRemoveFromEventList at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/tasks.c:3897 (discriminator 1)
+--- 0x4037b9f8: xQueueSemaphoreTake at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/queue.c:1763
+--- 0x4037baaa: xQueueTakeMutexRecursive at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/queue.c:835
+--- 0x40376c4d: lock_acquire_generic at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/locks.c:146
+--- 0x40376d41: _lock_acquire_recursive at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/locks.c:162
+--- 0x40376e0b: __retarget_lock_acquire_recursive at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/locks.c:321
+--- 0x420207fe: _vfprintf_r at /builds/idf/crosstool-NG/.build/xtensa-esp-elf/src/newlib/newlib/libc/stdio/vfprintf.c:846 (discriminator 2)
+--- 0x420199f9: vprintf at /builds/idf/crosstool-NG/.build/xtensa-esp-elf/src/newlib/newlib/libc/stdio/vprintf.c:34
+--- 0x4202d635: esp_log_writev at /home/sumanshu/esp/v5.3.2/esp-idf/components/log/log.c:210
+--- 0x4038250d: esp_log_write at /home/sumanshu/esp/v5.3.2/esp-idf/components/log/log.c:220
+--- 0x42009bc0: mount_sdcard at /home/sumanshu/projects/i2s_recorder/main/i2s_recorder_main.c:154 (discriminator 1)
+--- 0x42009ca3: app_main at /home/sumanshu/projects/i2s_recorder/main/i2s_recorder_main.c:195
+--- 0x4202c8fb: main_task at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/app_startup.c:208
+--- 0x4037bba1: vPortTaskWrapper at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+[0m
+[0;33m--- 0x40375acc: esp_restart_noos at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/port/soc/esp32s3/system_internal.c:158
+[0m
+[0;33m--- 0x40375b92: panic_abort at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/panic.c:463
+--- 0x4037b10d: esp_system_abort at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/port/esp_system_chip.c:92
+--- 0x40382799: __assert_func at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/assert.c:80
+--- 0x4037d256: xTaskRemoveFromEventList at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/tasks.c:3897 (discriminator 1)
+--- 0x4037b9f8: xQueueSemaphoreTake at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/queue.c:1763
+--- 0x4037baaa: xQueueTakeMutexRecursive at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/queue.c:835
+--- 0x40376c4d: lock_acquire_generic at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/locks.c:146
+--- 0x40376d41: _lock_acquire_recursive at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/locks.c:162
+--- 0x40376e0b: __retarget_lock_acquire_recursive at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/locks.c:321
+--- 0x420207fe: _vfprintf_r at /builds/idf/crosstool-NG/.build/xtensa-esp-elf/src/newlib/newlib/libc/stdio/vfprintf.c:846 (discriminator 2)
+--- 0x420199f9: vprintf at /builds/idf/crosstool-NG/.build/xtensa-esp-elf/src/newlib/newlib/libc/stdio/vprintf.c:34
+--- 0x4202d635: esp_log_writev at /home/sumanshu/esp/v5.3.2/esp-idf/components/log/log.c:210
+--- 0x4038250d: esp_log_write at /home/sumanshu/esp/v5.3.2/esp-idf/components/log/log.c:220
+--- 0x42009bc0: mount_sdcard at /home/sumanshu/projects/i2s_recorder/main/i2s_recorder_main.c:154 (discriminator 1)
+--- 0x42009ca3: app_main at /home/sumanshu/projects/i2s_recorder/main/i2s_recorder_main.c:195
+--- 0x4202c8fb: main_task at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/app_startup.c:208
+--- 0x4037bba1: vPortTaskWrapper at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+[0m
+[0;33m--- 0x40375acc: esp_restart_noos at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/port/soc/esp32s3/system_internal.c:158
+[0m
+[0;33m--- 0x40375b92: panic_abort at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/panic.c:463
+--- 0x4037b10d: esp_system_abort at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/port/esp_system_chip.c:92
+--- 0x40382799: __assert_func at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/assert.c:80
+--- 0x4037d256: xTaskRemoveFromEventList at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/tasks.c:3897 (discriminator 1)
+--- 0x4037b9f8: xQueueSemaphoreTake at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/queue.c:1763
+--- 0x4037baaa: xQueueTakeMutexRecursive at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/queue.c:835
+--- 0x40376c4d: lock_acquire_generic at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/locks.c:146
+--- 0x40376d41: _lock_acquire_recursive at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/locks.c:162
+--- 0x40376e0b: __retarget_lock_acquire_recursive at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/locks.c:321
+--- 0x420207fe: _vfprintf_r at /builds/idf/crosstool-NG/.build/xtensa-esp-elf/src/newlib/newlib/libc/stdio/vfprintf.c:846 (discriminator 2)
+--- 0x420199f9: vprintf at /builds/idf/crosstool-NG/.build/xtensa-esp-elf/src/newlib/newlib/libc/stdio/vprintf.c:34
+--- 0x4202d635: esp_log_writev at /home/sumanshu/esp/v5.3.2/esp-idf/components/log/log.c:210
+--- 0x4038250d: esp_log_write at /home/sumanshu/esp/v5.3.2/esp-idf/components/log/log.c:220
+--- 0x42009bc0: mount_sdcard at /home/sumanshu/projects/i2s_recorder/main/i2s_recorder_main.c:154 (discriminator 1)
+--- 0x42009ca3: app_main at /home/sumanshu/projects/i2s_recorder/main/i2s_recorder_main.c:195
+--- 0x4202c8fb: main_task at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/app_startup.c:208
+--- 0x4037bba1: vPortTaskWrapper at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+[0m
+[0;33m--- 0x40375acc: esp_restart_noos at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/port/soc/esp32s3/system_internal.c:158
+[0m
+[0;33m--- 0x40375b92: panic_abort at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/panic.c:463
+--- 0x4037b10d: esp_system_abort at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/port/esp_system_chip.c:92
+--- 0x40382799: __assert_func at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/assert.c:80
+--- 0x4037d256: xTaskRemoveFromEventList at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/tasks.c:3897 (discriminator 1)
+--- 0x4037b9f8: xQueueSemaphoreTake at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/queue.c:1763
+--- 0x4037baaa: xQueueTakeMutexRecursive at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/queue.c:835
+--- 0x40376c4d: lock_acquire_generic at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/locks.c:146
+--- 0x40376d41: _lock_acquire_recursive at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/locks.c:162
+--- 0x40376e0b: __retarget_lock_acquire_recursive at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/locks.c:321
+--- 0x420207fe: _vfprintf_r at /builds/idf/crosstool-NG/.build/xtensa-esp-elf/src/newlib/newlib/libc/stdio/vfprintf.c:846 (discriminator 2)
+--- 0x420199f9: vprintf at /builds/idf/crosstool-NG/.build/xtensa-esp-elf/src/newlib/newlib/libc/stdio/vprintf.c:34
+--- 0x4202d635: esp_log_writev at /home/sumanshu/esp/v5.3.2/esp-idf/components/log/log.c:210
+--- 0x4038250d: esp_log_write at /home/sumanshu/esp/v5.3.2/esp-idf/components/log/log.c:220
+--- 0x42009bc0: mount_sdcard at /home/sumanshu/projects/i2s_recorder/main/i2s_recorder_main.c:154 (discriminator 1)
+--- 0x42009ca3: app_main at /home/sumanshu/projects/i2s_recorder/main/i2s_recorder_main.c:195
+--- 0x4202c8fb: main_task at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/app_startup.c:208
+--- 0x4037bba1: vPortTaskWrapper at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+[0m
+[0;33m--- 0x40375acc: esp_restart_noos at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/port/soc/esp32s3/system_internal.c:158
+[0m
+[0;33m--- 0x40375b92: panic_abort at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/panic.c:463
+--- 0x4037b10d: esp_system_abort at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/port/esp_system_chip.c:92
+--- 0x40382799: __assert_func at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/assert.c:80
+--- 0x4037d256: xTaskRemoveFromEventList at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/tasks.c:3897 (discriminator 1)
+--- 0x4037b9f8: xQueueSemaphoreTake at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/queue.c:1763
+--- 0x4037baaa: xQueueTakeMutexRecursive at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/queue.c:835
+--- 0x40376c4d: lock_acquire_generic at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/locks.c:146
+--- 0x40376d41: _lock_acquire_recursive at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/locks.c:162
+--- 0x40376e0b: __retarget_lock_acquire_recursive at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/locks.c:321
+--- 0x420207fe: _vfprintf_r at /builds/idf/crosstool-NG/.build/xtensa-esp-elf/src/newlib/newlib/libc/stdio/vfprintf.c:846 (discriminator 2)
+--- 0x420199f9: vprintf at /builds/idf/crosstool-NG/.build/xtensa-esp-elf/src/newlib/newlib/libc/stdio/vprintf.c:34
+--- 0x4202d635: esp_log_writev at /home/sumanshu/esp/v5.3.2/esp-idf/components/log/log.c:210
+--- 0x4038250d: esp_log_write at /home/sumanshu/esp/v5.3.2/esp-idf/components/log/log.c:220
+--- 0x42009bc0: mount_sdcard at /home/sumanshu/projects/i2s_recorder/main/i2s_recorder_main.c:154 (discriminator 1)
+--- 0x42009ca3: app_main at /home/sumanshu/projects/i2s_recorder/main/i2s_recorder_main.c:195
+--- 0x4202c8fb: main_task at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/app_startup.c:208
+--- 0x4037bba1: vPortTaskWrapper at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+[0m
+[0;33m--- 0x40375acc: esp_restart_noos at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/port/soc/esp32s3/system_internal.c:158
+[0m
+[0;33m--- 0x40375b92: panic_abort at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/panic.c:463
+--- 0x4037b10d: esp_system_abort at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/port/esp_system_chip.c:92
+--- 0x40382799: __assert_func at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/assert.c:80
+--- 0x4037d256: xTaskRemoveFromEventList at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/tasks.c:3897 (discriminator 1)
+--- 0x4037b9f8: xQueueSemaphoreTake at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/queue.c:1763
+--- 0x4037baaa: xQueueTakeMutexRecursive at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/queue.c:835
+--- 0x40376c4d: lock_acquire_generic at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/locks.c:146
+--- 0x40376d41: _lock_acquire_recursive at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/locks.c:162
+--- 0x40376e0b: __retarget_lock_acquire_recursive at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/locks.c:321
+--- 0x420207fe: _vfprintf_r at /builds/idf/crosstool-NG/.build/xtensa-esp-elf/src/newlib/newlib/libc/stdio/vfprintf.c:846 (discriminator 2)
+--- 0x420199f9: vprintf at /builds/idf/crosstool-NG/.build/xtensa-esp-elf/src/newlib/newlib/libc/stdio/vprintf.c:34
+--- 0x4202d635: esp_log_writev at /home/sumanshu/esp/v5.3.2/esp-idf/components/log/log.c:210
+--- 0x4038250d: esp_log_write at /home/sumanshu/esp/v5.3.2/esp-idf/components/log/log.c:220
+--- 0x42009bc0: mount_sdcard at /home/sumanshu/projects/i2s_recorder/main/i2s_recorder_main.c:154 (discriminator 1)
+--- 0x42009ca3: app_main at /home/sumanshu/projects/i2s_recorder/main/i2s_recorder_main.c:195
+--- 0x4202c8fb: main_task at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/app_startup.c:208
+--- 0x4037bba1: vPortTaskWrapper at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+[0m
+[0;33m--- 0x40375acc: esp_restart_noos at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/port/soc/esp32s3/system_internal.c:158
+[0m
+[0;33m--- 0x40375b92: panic_abort at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/panic.c:463
+--- 0x4037b10d: esp_system_abort at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/port/esp_system_chip.c:92
+[0m
+[0;33m--- 0x40382799: __assert_func at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/assert.c:80
+--- 0x4037d256: xTaskRemoveFromEventList at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/tasks.c:3897 (discriminator 1)
+--- 0x4037b9f8: xQueueSemaphoreTake at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/queue.c:1763
+--- 0x4037baaa: xQueueTakeMutexRecursive at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/queue.c:835
+--- 0x40376c4d: lock_acquire_generic at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/locks.c:146
+--- 0x40376d41: _lock_acquire_recursive at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/locks.c:162
+[0m
+[0;33m--- 0x40376e0b: __retarget_lock_acquire_recursive at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/locks.c:321
+--- 0x420207fe: _vfprintf_r at /builds/idf/crosstool-NG/.build/xtensa-esp-elf/src/newlib/newlib/libc/stdio/vfprintf.c:846 (discriminator 2)
+--- 0x420199f9: vprintf at /builds/idf/crosstool-NG/.build/xtensa-esp-elf/src/newlib/newlib/libc/stdio/vprintf.c:34
+--- 0x4202d635: esp_log_writev at /home/sumanshu/esp/v5.3.2/esp-idf/components/log/log.c:210
+--- 0x4038250d: esp_log_write at /home/sumanshu/esp/v5.3.2/esp-idf/components/log/log.c:220
+--- 0x42009bc0: mount_sdcard at /home/sumanshu/projects/i2s_recorder/main/i2s_recorder_main.c:154 (discriminator 1)
+[0m
+[0;33m--- 0x42009ca3: app_main at /home/sumanshu/projects/i2s_recorder/main/i2s_recorder_main.c:195
+--- 0x4202c8fb: main_task at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/app_startup.c:208
+--- 0x4037bba1: vPortTaskWrapper at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+[0m
+[0;33m--- 0x40375acc: esp_restart_noos at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/port/soc/esp32s3/system_internal.c:158
+[0m
+[0;33m--- 0x40375b92: panic_abort at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/panic.c:463
+--- 0x4037b10d: esp_system_abort at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/port/esp_system_chip.c:92
+--- 0x40382799: __assert_func at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/assert.c:80
+--- 0x4037d256: xTaskRemoveFromEventList at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/tasks.c:3897 (discriminator 1)
+--- 0x4037b9f8: xQueueSemaphoreTake at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/queue.c:1763
+--- 0x4037baaa: xQueueTakeMutexRecursive at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/queue.c:835
+--- 0x40376c4d: lock_acquire_generic at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/locks.c:146
+--- 0x40376d41: _lock_acquire_recursive at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/locks.c:162
+--- 0x40376e0b: __retarget_lock_acquire_recursive at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/locks.c:321
+--- 0x420207fe: _vfprintf_r at /builds/idf/crosstool-NG/.build/xtensa-esp-elf/src/newlib/newlib/libc/stdio/vfprintf.c:846 (discriminator 2)
+--- 0x420199f9: vprintf at /builds/idf/crosstool-NG/.build/xtensa-esp-elf/src/newlib/newlib/libc/stdio/vprintf.c:34
+--- 0x4202d635: esp_log_writev at /home/sumanshu/esp/v5.3.2/esp-idf/components/log/log.c:210
+--- 0x4038250d: esp_log_write at /home/sumanshu/esp/v5.3.2/esp-idf/components/log/log.c:220
+--- 0x42009bc0: mount_sdcard at /home/sumanshu/projects/i2s_recorder/main/i2s_recorder_main.c:154 (discriminator 1)
+--- 0x42009ca3: app_main at /home/sumanshu/projects/i2s_recorder/main/i2s_recorder_main.c:195
+--- 0x4202c8fb: main_task at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/app_startup.c:208
+--- 0x4037bba1: vPortTaskWrapper at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+[0m
+[0;33m--- 0x40375acc: esp_restart_noos at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/port/soc/esp32s3/system_internal.c:158
+[0m
+[0;33m--- 0x40375b92: panic_abort at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/panic.c:463
+--- 0x4037b10d: esp_system_abort at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/port/esp_system_chip.c:92
+--- 0x40382799: __assert_func at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/assert.c:80
+--- 0x4037d256: xTaskRemoveFromEventList at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/tasks.c:3897 (discriminator 1)
+--- 0x4037b9f8: xQueueSemaphoreTake at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/queue.c:1763
+--- 0x4037baaa: xQueueTakeMutexRecursive at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/queue.c:835
+--- 0x40376c4d: lock_acquire_generic at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/locks.c:146
+--- 0x40376d41: _lock_acquire_recursive at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/locks.c:162
+--- 0x40376e0b: __retarget_lock_acquire_recursive at /home/sumanshu/esp/v5.3.2/esp-idf/components/newlib/locks.c:321
+--- 0x420207fe: _vfprintf_r at /builds/idf/crosstool-NG/.build/xtensa-esp-elf/src/newlib/newlib/libc/stdio/vfprintf.c:846 (discriminator 2)
+--- 0x420199f9: vprintf at /builds/idf/crosstool-NG/.build/xtensa-esp-elf/src/newlib/newlib/libc/stdio/vprintf.c:34
+--- 0x4202d635: esp_log_writev at /home/sumanshu/esp/v5.3.2/esp-idf/components/log/log.c:210
+--- 0x4038250d: esp_log_write at /home/sumanshu/esp/v5.3.2/esp-idf/components/log/log.c:220
+--- 0x42009bc0: mount_sdcard at /home/sumanshu/projects/i2s_recorder/main/i2s_recorder_main.c:154 (discriminator 1)
+--- 0x42009ca3: app_main at /home/sumanshu/projects/i2s_recorder/main/i2s_recorder_main.c:195
+--- 0x4202c8fb: main_task at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/app_startup.c:208
+--- 0x4037bba1: vPortTaskWrapper at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+[0m
+[0;33m--- 0x40375acc: esp_restart_noos at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/port/soc/esp32s3/system_internal.c:158
+[0m
+[0m

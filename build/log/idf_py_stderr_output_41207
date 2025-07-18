@@ -1,0 +1,6 @@
+[0;33m--- esp-idf-monitor 1.6.2 on /dev/ttyACM1 115200[0m
+[0;33m--- Quit: Ctrl+] | Menu: Ctrl+T | Help: Ctrl+T followed by Ctrl+H[0m
+[0;33m--- 0x40380c52: systimer_ll_is_counter_value_valid at /home/sumanshu/esp/v5.3.2/esp-idf/components/hal/esp32s3/include/hal/systimer_ll.h:95
+---  (inlined by) systimer_hal_get_counter_value at /home/sumanshu/esp/v5.3.2/esp-idf/components/hal/systimer_hal.c:51
+[0m
+[0m

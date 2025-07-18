@@ -1,0 +1,70 @@
+[0;33m--- esp-idf-monitor 1.6.2 on /dev/ttyACM1 115200[0m
+[0;33m--- Quit: Ctrl+] | Menu: Ctrl+T | Help: Ctrl+T followed by Ctrl+H[0m
+[0;33m--- 0x40048839: uart_tx_one_char_uart in ROM
+[0m
+[0;33m--- 0x420154db: task_wdt_timeout_handling at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/task_wdt/task_wdt.c:434
+--- 0x420158f8: task_wdt_isr at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/task_wdt/task_wdt.c:507
+--- 0x40378119: _xt_lowint1 at /home/sumanshu/esp/v5.3.2/esp-idf/components/xtensa/xtensa_vectors.S:1240
+--- 0x42009a88: app_main at /home/sumanshu/projects/i2s_recorder/main/i2s_recorder_main.c:235 (discriminator 1)
+--- 0x4202ba87: main_task at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/app_startup.c:208
+--- 0x4037bba1: vPortTaskWrapper at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+[0m
+[0;33m--- 0x420154db: task_wdt_timeout_handling at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/task_wdt/task_wdt.c:434
+--- 0x420158f8: task_wdt_isr at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/task_wdt/task_wdt.c:507
+--- 0x40378119: _xt_lowint1 at /home/sumanshu/esp/v5.3.2/esp-idf/components/xtensa/xtensa_vectors.S:1240
+--- 0x42009a7a: app_main at /home/sumanshu/projects/i2s_recorder/main/i2s_recorder_main.c:236
+--- 0x4202ba87: main_task at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/app_startup.c:208
+--- 0x4037bba1: vPortTaskWrapper at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+[0m
+[0;33m--- 0x420154db: task_wdt_timeout_handling at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/task_wdt/task_wdt.c:434
+--- 0x420158f8: task_wdt_isr at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/task_wdt/task_wdt.c:507
+--- 0x40378119: _xt_lowint1 at /home/sumanshu/esp/v5.3.2/esp-idf/components/xtensa/xtensa_vectors.S:1240
+--- 0x42009a6e: app_main at /home/sumanshu/projects/i2s_recorder/main/i2s_recorder_main.c:233
+--- 0x4202ba87: main_task at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/app_startup.c:208
+--- 0x4037bba1: vPortTaskWrapper at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+[0m
+[0;33m--- 0x420154db: task_wdt_timeout_handling at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/task_wdt/task_wdt.c:434
+--- 0x420158f8: task_wdt_isr at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/task_wdt/task_wdt.c:507
+--- 0x40378119: _xt_lowint1 at /home/sumanshu/esp/v5.3.2/esp-idf/components/xtensa/xtensa_vectors.S:1240
+--- 0x42009a88: app_main at /home/sumanshu/projects/i2s_recorder/main/i2s_recorder_main.c:235 (discriminator 1)
+--- 0x4202ba87: main_task at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/app_startup.c:208
+--- 0x4037bba1: vPortTaskWrapper at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+[0m
+[0;33m--- 0x420154db: task_wdt_timeout_handling at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/task_wdt/task_wdt.c:434
+--- 0x420158f8: task_wdt_isr at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/task_wdt/task_wdt.c:507
+--- 0x40378119: _xt_lowint1 at /home/sumanshu/esp/v5.3.2/esp-idf/components/xtensa/xtensa_vectors.S:1240
+--- 0x42009a88: app_main at /home/sumanshu/projects/i2s_recorder/main/i2s_recorder_main.c:235 (discriminator 1)
+--- 0x4202ba87: main_task at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/app_startup.c:208
+--- 0x4037bba1: vPortTaskWrapper at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+[0m
+[0;33m--- 0x420154db: task_wdt_timeout_handling at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/task_wdt/task_wdt.c:434
+--- 0x420158f8: task_wdt_isr at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/task_wdt/task_wdt.c:507
+--- 0x40378119: _xt_lowint1 at /home/sumanshu/esp/v5.3.2/esp-idf/components/xtensa/xtensa_vectors.S:1240
+--- 0x42009a77: app_main at /home/sumanshu/projects/i2s_recorder/main/i2s_recorder_main.c:236
+--- 0x4202ba87: main_task at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/app_startup.c:208
+--- 0x4037bba1: vPortTaskWrapper at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+[0m
+[0;33m--- 0x420154db: task_wdt_timeout_handling at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/task_wdt/task_wdt.c:434
+--- 0x420158f8: task_wdt_isr at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/task_wdt/task_wdt.c:507
+--- 0x40378119: _xt_lowint1 at /home/sumanshu/esp/v5.3.2/esp-idf/components/xtensa/xtensa_vectors.S:1240
+--- 0x42009a85: app_main at /home/sumanshu/projects/i2s_recorder/main/i2s_recorder_main.c:235 (discriminator 3)
+--- 0x4202ba87: main_task at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/app_startup.c:208
+--- 0x4037bba1: vPortTaskWrapper at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+[0m
+[0;33m--- 0x420154db: task_wdt_timeout_handling at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/task_wdt/task_wdt.c:434
+--- 0x420158f8: task_wdt_isr at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/task_wdt/task_wdt.c:507
+--- 0x40378119: _xt_lowint1 at /home/sumanshu/esp/v5.3.2/esp-idf/components/xtensa/xtensa_vectors.S:1240
+--- 0x42009a6e: app_main at /home/sumanshu/projects/i2s_recorder/main/i2s_recorder_main.c:233
+--- 0x4202ba87: main_task at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/app_startup.c:208
+--- 0x4037bba1: vPortTaskWrapper at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+[0m
+[0;33m--- 0x420154db: task_wdt_timeout_handling at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/task_wdt/task_wdt.c:434
+--- 0x420158f8: task_wdt_isr at /home/sumanshu/esp/v5.3.2/esp-idf/components/esp_system/task_wdt/task_wdt.c:507
+--- 0x40378119: _xt_lowint1 at /home/sumanshu/esp/v5.3.2/esp-idf/components/xtensa/xtensa_vectors.S:1240
+--- 0x42009a85: app_main at /home/sumanshu/projects/i2s_recorder/main/i2s_recorder_main.c:235 (discriminator 3)
+--- 0x4202ba87: main_task at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/app_startup.c:208
+--- 0x4037bba1: vPortTaskWrapper at /home/sumanshu/esp/v5.3.2/esp-idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+[0m
+[0;33m--- Warning: Writing to serial is timing out. Please make sure that your application supports an interactive console and that you have picked the correct console for serial communication.[0m
+[0;33m--- Warning: Writing to serial is timing out. Please make sure that your application supports an interactive console and that you have picked the correct console for serial communication.[0m
+[0m
